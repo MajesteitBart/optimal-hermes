@@ -418,7 +418,7 @@ def _discover(db, query: str, role_filter: Optional[List[str]], limit: int, sort
         if current_session_id and raw_sid == current_session_id and not is_compacted_hit:
             continue
         seen_sessions.setdefault(resolved_sid, {**r, "_lineage_root": resolved_sid})
-    if len(seen_sessions) > limit:
+    if rerank and len(seen_sessions) > 1:  # order matters even untrimmed: only the first hit is hydrated
         seen_sessions = _keep_most_relevant(query, seen_sessions, limit)
     for lineage_root, match_info in seen_sessions.items():
         if match_info.get("_title_only"):

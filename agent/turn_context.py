@@ -15,7 +15,7 @@ import time
 import uuid
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from agent.conversation_compression import recover_rotated_compression_session
 from agent.iteration_budget import IterationBudget
@@ -906,6 +906,7 @@ def _memory_query_text(original_user_message: Any) -> str:
 
 def _memory_turn_start_and_prefetch(
     agent: Any, original_user_message: Any, turn_author: Optional[Dict[str, Any]] = None,
+    history: Sequence[Dict[str, Any]] = (),
 ) -> str:
     """Notify memory providers of the new turn, then prefetch external memory once
     before the tool loop (skipped on trivial prompts with no semantic signal).
@@ -929,7 +930,7 @@ def _memory_turn_start_and_prefetch(
     _recall_note = ""
     if ext_prefetch_cache:
         from agent.relevance_memory import filter_turn_recall
-        ext_prefetch_cache, _recall_note = filter_turn_recall(agent, ext_prefetch_cache, _query)
+        ext_prefetch_cache, _recall_note = filter_turn_recall(agent, ext_prefetch_cache, _query, history=history)
     # Deterministic recall indicator via _emit_status so the model can't silently
     # drop injected memory.
     if ext_prefetch_cache or _recall_note:
@@ -1195,7 +1196,8 @@ def build_turn_context(
     should_review_memory = review_due(agent, should_review_memory)
 
     _bind_interrupt_scope(agent, ra)
-    ext_prefetch_cache = _memory_turn_start_and_prefetch(agent, original_user_message, turn_author)
+    ext_prefetch_cache = _memory_turn_start_and_prefetch(agent, original_user_message, turn_author,
+                                                         history=messages[:current_turn_user_idx])
 
     # Title the session now: titling depends only on the user's ask (before any injected
     # context lands on list content), so it runs concurrently with the turn. Daemon thread,

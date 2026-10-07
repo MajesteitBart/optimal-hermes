@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import logging
+import threading
+import time
+
 import httpx
 import pytest
 
 from agent.relevance import RelevanceSettings, evaluate
 from agent.relevance_typesafe import (
     TYPESAFE_ENDPOINT, NoulAnswer, NoulQuestion, RelevanceError, RelevanceRequestError, RelevanceResponseError,
-    RelevanceUnavailable, ScoreAnswer, ScoreQuestion, SystemOneClient, parse_answers, plan_batches,
+    RelevanceTimeout, RelevanceUnavailable, ScoreAnswer, ScoreQuestion, SystemOneClient, parse_answers,
+    plan_batches,
 )
 from tests._fixtures.typesafe_fake import FakeSystemOne
 
@@ -156,3 +161,48 @@ class TestEvaluate:
     def test_no_questions_sends_nothing(self, fake_systemone):
         assert evaluate("s", {}, settings=RelevanceSettings()).requests == 0
         assert fake_systemone.requests == []
+
+
+class TestReviewRegressionsRound4:
+    """Regressions from the PR review (round 4): httpx timeouts are per phase, not per request."""
+
+    def test_a_trickling_body_is_abandoned_at_the_deadline(self):
+        sent = []
+
+        class Trickle(httpx.SyncByteStream):
+            def __iter__(self):
+                for _ in range(50):
+                    sent.append(1)
+                    time.sleep(0.1)
+                    yield b" "
+
+        transport = httpx.MockTransport(lambda request: httpx.Response(200, stream=Trickle()))
+        client = SystemOneClient("k", transport=transport, sleep=lambda s: None, max_retries=0,
+                                 deadline=time.monotonic() + 1.0)
+        with pytest.raises(RelevanceTimeout):
+            client.ask("s", {"b": NoulQuestion("?")})
+        assert len(sent) < 50  # each chunk restarts httpx's read timeout; only the deadline stops it
+
+    def test_evaluate_stops_waiting_at_the_deadline(self, fake_systemone):
+        release = threading.Event()
+
+        def stalled(request):
+            release.wait(10)  # a connect or send phase that outlasts the budget
+            return FakeSystemOne.handle(fake_systemone, request)
+
+        fake_systemone.handle = stalled
+        try:
+            with pytest.raises(RelevanceTimeout):
+                evaluate("s", {"b": NoulQuestion("?")}, settings=RelevanceSettings(),
+                         deadline=time.monotonic() + 0.5)
+        finally:
+            release.set()
+
+    def test_error_bodies_never_reach_the_log(self, caplog):
+        fake = FakeSystemOne()
+        fake.replies = [httpx.Response(422, text="cannot parse: Remember my key sk-SECRET-123")]
+        client, _ = _client(fake, max_retries=0)
+        with caplog.at_level(logging.DEBUG, logger="agent.relevance_typesafe"):
+            with pytest.raises(RelevanceRequestError):
+                client.ask("s", {"b": NoulQuestion("?")})
+        assert "422" in caplog.text and "SECRET" not in caplog.text

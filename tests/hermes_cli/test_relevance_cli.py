@@ -46,6 +46,13 @@ def _hermes(*argv, input_text=None):
                           capture_output=True, text=True, encoding="utf-8", timeout=180)
 
 
+def test_relevance_ends_a_continued_session_name():
+    from hermes_cli.main import _coalesce_session_name_args
+
+    # `hermes -c my relevance status` must not become session "my relevance" + the `status` command.
+    assert _coalesce_session_name_args(["-c", "my", "relevance", "status"]) == ["-c", "my", "relevance", "status"]
+
+
 class TestSkillsSelectSubprocess:
     def test_dry_run_prints_the_requests_without_a_key(self):
         write_skill("pdf-tools", "Merge PDFs.")

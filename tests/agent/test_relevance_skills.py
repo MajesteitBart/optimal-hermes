@@ -241,14 +241,17 @@ class TestTurnEntryPoint:
             assert rs.build_turn_skill_context(agent, user_message=text, messages=[], current_turn_user_idx=0) == ""
         assert fake_systemone.requests == []
 
-    def test_failure_attaches_nothing_and_warns_once(self, fake_systemone):
+    def test_failure_attaches_loading_guidance_and_warns_once(self, fake_systemone):
         write_skill("pdf-tools", "PDFs.")
         write_config("skills:\n  selection:\n    enabled: true\nrelevance:\n  max_retries: 0\n")
         fake_systemone.replies = [httpx.Response(500, text="SECRET-BODY"), httpx.Response(500, text="SECRET-BODY")]
         agent, statuses = _agent()
         for _ in range(2):
-            assert rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[],
-                                               current_turn_user_idx=0) == ""
+            context = rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[],
+                                                  current_turn_user_idx=0)
+            # The selection index dropped the "load anything relevant" policy; an outage puts it back.
+            assert "Skill selection was unavailable" in context and "skill_view" in context
+            assert "PDFs." not in context  # guidance only, no skill content
         assert len(statuses) == 1 and statuses[0].startswith("⚠ Skill selection unavailable (http_500)")
         assert "SECRET-BODY" not in statuses[0]
 
@@ -353,16 +356,21 @@ class TestReviewRegressionsRound3:
         write_config("skills:\n  selection:\n    enabled: true\nrelevance:\n  turn_budget_seconds: 1\n"
                      "  max_retries: 5\n")
 
+        attempt_timeouts = []
+
         def stalled(request):
+            attempt_timeouts.append(request.extensions["timeout"]["read"])
             time.sleep(0.4)
             raise httpx.ReadTimeout("slow")
 
         fake_systemone.handle = stalled
         agent, statuses = _agent()
-        started = time.monotonic()
-        assert rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[],
-                                           current_turn_user_idx=0) == ""
-        assert time.monotonic() - started < 3.0  # a 1 s budget, not 6 attempts x 8 s
+        assert "Skill selection was unavailable" in rs.build_turn_skill_context(
+            agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
+        # Without the budget: 6 attempts, each allowed the full 8 s timeout. Counted, not timed, so a
+        # loaded runner cannot flake it.
+        assert attempt_timeouts and max(attempt_timeouts) <= 1.0
+        assert len(attempt_timeouts) <= 3
         assert statuses == ["⚠ Skill selection unavailable (timeout); continuing without attached skills"]
 
     def test_settings_come_from_the_agents_own_home(self, tmp_path):
@@ -388,3 +396,15 @@ class TestReviewRegressionsRound3:
         index = _render_selection_index({"meta": [("hermes-agent", "Configure Hermes.")]}, {}, {"skills_list"}, "none",
                                         unloadable=["dup-skill"])
         assert _HERMES_AGENT_SKILL_LISTED.search(index) and "dup-skill" in index
+
+
+class TestReviewRegressionsRound4:
+    """Regressions from the PR review (round 4)."""
+
+    def test_an_outage_with_index_none_points_at_skills_list(self, fake_systemone):
+        write_skill("pdf-tools", "PDFs.")
+        write_config("skills:\n  selection:\n    enabled: true\n    index: none\nrelevance:\n  max_retries: 0\n")
+        fake_systemone.replies = [httpx.Response(500)]
+        agent, _ = _agent()
+        context = rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
+        assert "skills_list" in context  # with index none the system prompt lists no skills

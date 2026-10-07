@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_EXCEPTION, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Optional
 
@@ -134,15 +134,27 @@ def evaluate(
         client_kwargs["sleep"] = sleep
     client = SystemOneClient(key, **client_kwargs)
     started = time.monotonic()
-    if len(batches) == 1:
+    if len(batches) == 1 and deadline is None:
         return client.ask(state, batches[0], model=settings.model)
     from agent.memory_provider import ctx_bound
 
-    with ThreadPoolExecutor(max_workers=min(len(batches), settings.max_concurrency),
-                            thread_name_prefix="relevance") as pool:
+    pool = ThreadPoolExecutor(max_workers=min(len(batches), settings.max_concurrency), thread_name_prefix="relevance")
+    try:
         # One context copy per request: a single bound copy cannot be entered by two threads at once.
         futures = [pool.submit(ctx_bound(client.ask), state, batch, model=settings.model) for batch in batches]
+        # httpx timeouts are per phase (connect, send, each read), so a request can outlast the budget;
+        # the caller stops waiting at the deadline instead.
+        timeout = None if deadline is None else max(0.0, deadline - time.monotonic())
+        done, pending = wait(futures, timeout=timeout, return_when=FIRST_EXCEPTION)
+        failed = next((future.exception() for future in done if future.exception() is not None), None)
+        if failed is not None:
+            raise failed
+        if pending:
+            raise RelevanceTimeout("TypeSafe time budget exhausted")
         parts = [future.result() for future in futures]
+    finally:
+        # Stragglers are abandoned, not awaited: their phase timeouts and the body deadline end them.
+        pool.shutdown(wait=False, cancel_futures=True)
     return merge_evaluations(parts, elapsed_ms=int((time.monotonic() - started) * 1000), model=settings.model)
 
 

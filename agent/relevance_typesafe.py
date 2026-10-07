@@ -42,7 +42,6 @@ MAX_STATE_PLUS_QUESTION_TOKENS = 24_000
 RETRY_STATUSES = frozenset({429, 502, 503, 504, 529})
 # Scoring runs inside a user turn: a long Retry-After means "not now", not "wait a minute".
 MAX_RETRY_WAIT_SECONDS = 4.0
-_ERROR_DETAIL_CHARS = 300
 # An attempt needs at least this much of the time budget left to be worth starting.
 MIN_ATTEMPT_SECONDS = 0.3
 
@@ -233,7 +232,7 @@ def build_payload(state: Any, questions: Mapping[str, Question], model: str) -> 
 
 def _status_message(response: httpx.Response) -> str:
     """The error for a non-200 reply. Never quotes the body: it can echo the request (memory, messages),
-    and this text reaches logs, the ledger and chat warnings. The body goes to the debug log only."""
+    and this text reaches logs, the ledger and chat warnings."""
     status = response.status_code
     if status == 401:
         return "TypeSafe rejected the API key (HTTP 401); check TYPESAFE_API_KEY"
@@ -306,8 +305,9 @@ class SystemOneClient:
             for attempt in range(1, attempts + 1):
                 retry_delay = self._retry_delay(attempt, None) if attempt < attempts else None
                 try:
-                    response = client.post(TYPESAFE_ENDPOINT, json=payload, headers=headers,
-                                           timeout=httpx.Timeout(self._attempt_timeout()))
+                    with client.stream("POST", TYPESAFE_ENDPOINT, json=payload, headers=headers,
+                                       timeout=httpx.Timeout(self._attempt_timeout())) as response:
+                        content = self._read_body(response)
                 except httpx.TransportError as exc:
                     logger.debug("TypeSafe transport error (attempt %d/%d): %s", attempt, attempts, exc)
                     if self._retry_after(retry_delay):
@@ -316,16 +316,26 @@ class SystemOneClient:
                     raise error(f"TypeSafe request failed: {type(exc).__name__}") from exc
                 if response.status_code == 200:
                     try:
-                        return response.json()
+                        return json.loads(content)
                     except ValueError as exc:
                         raise RelevanceResponseError("TypeSafe returned a body that is not JSON") from exc
-                logger.debug("TypeSafe HTTP %d (attempt %d/%d): %s", response.status_code, attempt, attempts,
-                             (response.text or "")[:_ERROR_DETAIL_CHARS])
+                # No body: it can echo the request (memory, messages) into a log someone else reads.
+                logger.debug("TypeSafe HTTP %d (attempt %d/%d)", response.status_code, attempt, attempts)
                 retryable = response.status_code in RETRY_STATUSES and attempt < attempts
                 if retryable and self._retry_after(self._retry_delay(attempt, response)):
                     continue
                 raise RelevanceRequestError(_status_message(response), status=response.status_code)
         raise AssertionError("unreachable: the last attempt always returns or raises")
+
+    def _read_body(self, response: httpx.Response) -> bytes:
+        """The whole body, abandoned at the deadline: httpx's read timeout restarts with every chunk, so
+        a server that trickles bytes would otherwise hold the request open indefinitely."""
+        chunks = []
+        for chunk in response.iter_bytes():
+            chunks.append(chunk)
+            if self._deadline is not None and time.monotonic() > self._deadline:
+                raise RelevanceTimeout("TypeSafe time budget exhausted")
+        return b"".join(chunks)
 
 
 def merge_evaluations(parts: Sequence[Evaluation], *, elapsed_ms: int, model: str) -> Evaluation:

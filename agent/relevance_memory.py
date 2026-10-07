@@ -55,6 +55,7 @@ RECALL_RELEVANT_MIN = 0.3
 RECALL_PREFERENCE_MIN = 0.6
 RECALL_INJECTION_MIN = 0.8
 MAX_RECALL_ITEMS = 60
+RECALL_RECENT_MESSAGES = 4  # "what about that project?" needs the turns before it
 
 _STORE_LABELS = {
     "user": "user profile: who the user is (name, role, preferences, communication style)",
@@ -271,11 +272,14 @@ class MemoryWriteGate:
         self.deferred_to_store = False  # check() returned the store's own refusal, not a gate decision
 
     def _refused_before(self) -> set:
+        """Entries refused earlier in this user turn. A refusal invites an immediate repeat; the same entry
+        proposed in a later turn of the cached agent is judged again."""
+        turn = getattr(self.agent, "_user_turn_count", 0)
         seen = getattr(self.agent, "_memory_gate_refused", None)
-        if not isinstance(seen, set):
-            seen = set()
+        if not (isinstance(seen, tuple) and seen[0] == turn):
+            seen = (turn, set())
             self.agent._memory_gate_refused = seen
-        return seen
+        return seen[1]
 
     def check(self, store: Any, action: Optional[str], target: str, content: Optional[str],
               old_text: Optional[str], operations: Optional[List[Dict[str, Any]]] = None) -> Optional[str]:
@@ -660,7 +664,9 @@ def filter_recall(
         scores = {k: _noul(result.answers, f"{k}{i}") for k in RECALL_QUESTIONS}
         keep.append(judge_recall_item(scores))
         details.append({"text": item.text, "scores": scores, "kept": keep[-1]})
-    keep += [True] * len(overflow)  # past the scoring cap: unjudged, so untouched
+    # Past the scoring cap nothing was screened for injection, so nothing there reaches the chat:
+    # 60 harmless bullets must not carry an instruction in on item 61.
+    keep += [False] * len(overflow)
     return RecallFilterResult(text=_join_kept(lines, items, keep), total=len(items), kept=sum(keep),
                               evaluation=result, items=details)
 
@@ -673,16 +679,20 @@ def judge_recall_item(scores: Mapping[str, float]) -> bool:
                  or scores.get("preference", 0.0) >= RECALL_PREFERENCE_MIN))
 
 
-def filter_turn_recall(agent: Any, recall: str, query: str) -> Tuple[str, str]:
-    """``memory.recall_filter`` for one turn: ``(text to inject, indicator suffix)``. Off or
-    unavailable returns the recall unchanged."""
+def filter_turn_recall(
+    agent: Any, recall: str, query: str, *, history: Sequence[Mapping[str, Any]] = (),
+) -> Tuple[str, str]:
+    """``memory.recall_filter`` for one turn: ``(text to inject, indicator suffix)``. ``history`` is the
+    conversation before this message. Off or unavailable returns the recall unchanged."""
     if not recall or not agent_memory_gate_config(agent).recall_filter:
         return recall, ""
     from agent.relevance import agent_config
+    from agent.relevance_skills import recent_conversation
 
     try:
         settings = load_settings(agent_config(agent))
-        result = filter_recall(recall, message=query, settings=settings, deadline=settings.turn_deadline())
+        result = filter_recall(recall, message=query, recent=recent_conversation(history, limit=RECALL_RECENT_MESSAGES),
+                               settings=settings, deadline=settings.turn_deadline())
     except Exception as exc:  # RelevanceError, or a bug: either way the recall passes through untouched
         logger.warning("Memory recall filter unavailable (%s); passing recall through", describe_error(exc),
                        exc_info=not isinstance(exc, RelevanceError))

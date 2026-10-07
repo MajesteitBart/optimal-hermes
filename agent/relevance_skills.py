@@ -723,6 +723,21 @@ def _turn_request_text(user_message: Any) -> Optional[str]:
     return text
 
 
+# The selection index drops the default "load anything relevant" policy because attached skills replace
+# it. When scoring fails nothing is attached, so this note restores the policy for that turn.
+_FALLBACK_NOTE = (
+    "[System note: Skill selection was unavailable for this message, so no skills are attached. Before "
+    "replying, check {where} and load each skill that matches or is even partially relevant to the task "
+    "with skill_view(name).]"
+)
+
+
+def fallback_skill_note(cfg: SelectionConfig, tools: Set[str]) -> str:
+    where = ("skills_list" if cfg.index == "none" and "skills_list" in tools
+             else "the skill index in the system prompt")
+    return _FALLBACK_NOTE.format(where=where)
+
+
 def _warn_once(agent: Any, code: str) -> None:
     """One chat warning per agent, carrying only an error code (never response text)."""
     if getattr(agent, "_skill_selection_warned", False):
@@ -776,7 +791,7 @@ def build_turn_skill_context(
         logger.warning("Skill selection: %s", describe_error(exc))
         _warn_once(agent, error_code(exc))
         relevance_ledger.record("skills", session_id=getattr(agent, "session_id", None), error=error_code(exc))
-        return ""
+        return fallback_skill_note(cfg, tools)
     _record_attached(report, task_id)
     agent._turn_attached_skills = [(s.candidate.name, s.candidate.description) for s in report.selection.selected]
     if report.signals.lasting is not None:

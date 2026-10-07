@@ -1332,7 +1332,7 @@ DEFAULT_CONFIG = {
         # so each is off until enabled. All fail open: unavailable scoring = today's behaviour.
         # write_gate judges each memory add/replace before it is saved: off | advise (save, but tell
         # the model when it looks like task progress, a procedure, a duplicate or trivia) | enforce
-        # (refuse those; an entry the user asked to remember, or one repeated after a refusal, saves).
+        # (refuse those; an entry the user asked to remember, or one repeated in the turn it was refused, saves).
         "write_gate": "off",
         # review_gate: before the periodic background memory review, ask whether the recent turns
         # hold anything durable about the user; skip the memory part of the review when they do not.

@@ -60,7 +60,7 @@ Each feature sends only the text its question needs:
   characters of the SKILL.md bodies on the shortlist. Paths and full skill bodies stay local.
 - The write gate sends the candidate entry, the existing memory entries and your latest message.
 - The review gate sends the last 20 messages, each cut to 500 characters.
-- The recall filter sends your message and the recalled items.
+- The recall filter sends your message, up to four earlier messages and the recalled items.
 - Search rerank sends the query and the matching snippets.
 
 TypeSafe states that it does not train on requests ([models](https://docs.typesafe.ai/models.md)).
@@ -129,8 +129,9 @@ A few rules keep selection from fighting you:
 - Delegated subagents and background review forks do not run selection. They work from a brief,
   not your conversation.
 - If scoring fails or runs past `relevance.turn_budget_seconds` (4 by default), nothing is attached
-  and you see one warning per session with an error code. Hermes does not fall back to a keyword
-  heuristic.
+  and you see one warning per session with an error code. That message instead carries a short note
+  telling the model to check the skill index (or `skills_list`) and load what fits, the instruction
+  Hermes gives without selection. Hermes does not fall back to a keyword heuristic.
 - An attached skill counts as used for the [curator](./curator.md), the same as a skill the model
   loads itself, so a skill that is attached often is not archived as stale. `track_outcomes` shows
   whether it was actually followed.
@@ -193,8 +194,8 @@ Amsterdam" and adds "lives in Berlin" passes, and two contradictory entries adde
 each other.
 
 `advise` saves everything and adds a note to the tool result when an entry looks wrong. `enforce`
-refuses. The model can override a refusal by repeating the identical call, and the second attempt
-is saved. Duplicates are checked across both stores, because one fact belongs in one store.
+refuses. The model can override a refusal by repeating the identical call in the same turn, and
+the second attempt is saved; in a later turn the entry is judged again. Duplicates are checked across both stores, because one fact belongs in one store.
 
 ### Review gate
 
@@ -221,7 +222,8 @@ questions: is it relevant to this
 message? Is it a standing preference about how the assistant should behave? Does it try to
 override the assistant's rules or make it run commands? Hermes keeps relevant items and standing
 preferences, drops anything that tries to instruct, and keeps headings only when something under
-them survives. The recall indicator then reads "recalled 7 memories · 3 of 7 relevant".
+them survives. At most 60 items are judged per message; any beyond that are dropped, because
+nothing screened them. The recall indicator then reads "recalled 7 memories · 3 of 7 relevant".
 
 ### Search rerank
 
