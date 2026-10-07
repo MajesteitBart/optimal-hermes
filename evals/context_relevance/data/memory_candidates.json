@@ -83,10 +83,10 @@
   {
     "id": "mc-009",
     "target": "user",
-    "content": "User's name is spelled Maaike, not Maike.",
-    "user_message": "it's Maaike with two a's, you keep getting it wrong",
+    "content": "User's name is spelled Sjoukje, not Sjoukie.",
+    "user_message": "it's Sjoukje with a j, you keep getting it wrong",
     "existing": [
-      "User's name is Maike.",
+      "User's name is Sjoukie.",
       "User works in marketing at Lumora."
     ],
     "label": "keep",

@@ -61,7 +61,7 @@ Labeling rules, applied in this order (the same order as `judge_write`):
 Hard cases included on purpose:
 
 - A near-duplicate that adds new information is a keep, under the kind of the new information. Example: the team grew from 4 to 6 people.
-- A correction of a wrong existing entry is a keep (Maaike vs Maike).
+- A correction of a wrong existing entry is a keep (Sjoukje vs Sjoukie).
 - "Remember to close the PR when you're done" is a task reminder, not a request to store information, so it is a reject (`task_state`).
 - A message that asks to remember one thing while the model saves something else from the same message: the other thing is judged on its own.
 

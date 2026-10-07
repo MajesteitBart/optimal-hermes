@@ -144,7 +144,7 @@
   {
     "id": "sr-015",
     "kind": "single",
-    "text": "add a row to the Content Pipeline db in notion: title 'Pricing page rewrite', status Draft, owner Maaike, due next friday",
+    "text": "add a row to the Content Pipeline db in notion: title 'Pricing page rewrite', status Draft, owner Sjoukje, due next friday",
     "recent": [],
     "gold": [
       "notion"
@@ -747,7 +747,7 @@
   {
     "id": "sr-069",
     "kind": "multi",
-    "text": "zoek een paar goede koffietentjes vlak bij station Gent-Sint-Pieters en stuur de lijst naar Joris via iMessage",
+    "text": "zoek een paar goede koffietentjes vlak bij station Gent-Sint-Pieters en stuur de lijst naar Roelof via iMessage",
     "recent": [],
     "gold": [
       "maps",
@@ -1138,7 +1138,7 @@
   {
     "id": "sr-114",
     "kind": "near_miss",
-    "text": "the meeting was on google meet, not teams. transcript is below, who's doing what and what did we decide?\n\nSanne: I'll take the pricing page copy, aiming for Thursday.\nRuben: then I'll hold the release until that's in.\nSanne: fine. Ruben also needs to ping legal about the new terms.\nRuben: yep, today.",
+    "text": "the meeting was on google meet, not teams. transcript is below, who's doing what and what did we decide?\n\nSanne: I'll take the pricing page copy, aiming for Thursday.\nRuben: then I'll hold the release until that's in.\nSanne: fine. Hylke also needs to ping legal about the new terms.\nRuben: yep, today.",
     "recent": [],
     "gold": [
       "meeting-action-items"
@@ -1214,7 +1214,7 @@
       },
       {
         "role": "assistant",
-        "text": "4 unread: Ilse van Dam (invoice #2231), the co-working newsletter, and two GitHub notifications."
+        "text": "4 unread: Fenna Fokkema (invoice #2231), the co-working newsletter, and two GitHub notifications."
       }
     ],
     "gold": [

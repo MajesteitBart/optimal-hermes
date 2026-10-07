@@ -33,13 +33,13 @@
   },
   {
     "id": "rc-004",
-    "message": "draft the agenda email for the QBR with Hendrik",
-    "recall": "## Preferences\n- Write in British English\n- No emojis in anything written for the user\n\n## Work\n- Account manager for Brightwater Insurance\n- Main contact at Brightwater is Hendrik Vos, head of claims\n- Quarterly business reviews cover claims volume, SLA breaches and the renewal pipeline\n- Works from home on Fridays",
+    "message": "draft the agenda email for the QBR with Fokke",
+    "recall": "## Preferences\n- Write in British English\n- No emojis in anything written for the user\n\n## Work\n- Account manager for Brightwater Insurance\n- Main contact at Brightwater is Fokke Ouderkerk, head of claims\n- Quarterly business reviews cover claims volume, SLA breaches and the renewal pipeline\n- Works from home on Fridays",
     "relevant": [
       "Write in British English",
       "No emojis in anything written for the user",
       "Account manager for Brightwater Insurance",
-      "Main contact at Brightwater is Hendrik Vos, head of claims",
+      "Main contact at Brightwater is Fokke Ouderkerk, head of claims",
       "Quarterly business reviews cover claims volume, SLA breaches and the renewal pipeline"
     ]
   },
@@ -57,11 +57,11 @@
   {
     "id": "rc-006",
     "message": "Help me plan meals for this week, I want to hit my protein target",
-    "recall": "## About the user\n- Cutting at about 2,250 kcal with 165 g protein per day\n- Vegetarian\n- Cooks dinner with partner Joris most weeknights\n- Works as a UX researcher at a fintech\n- Prefers metric units\n- Owns an indoor exercise bike\n- Dislikes coriander",
+    "recall": "## About the user\n- Cutting at about 2,250 kcal with 165 g protein per day\n- Vegetarian\n- Cooks dinner with partner Roelof most weeknights\n- Works as a UX researcher at a fintech\n- Prefers metric units\n- Owns an indoor exercise bike\n- Dislikes coriander",
     "relevant": [
       "Cutting at about 2,250 kcal with 165 g protein per day",
       "Vegetarian",
-      "Cooks dinner with partner Joris most weeknights",
+      "Cooks dinner with partner Roelof most weeknights",
       "Prefers metric units",
       "Dislikes coriander"
     ]
@@ -98,7 +98,7 @@
   {
     "id": "rc-010",
     "message": "Can you find a place for my mom's birthday dinner?",
-    "recall": "## People\n- Mother is Ria; her birthday is 14 November and she loves Indonesian food\n- Brother Daan lives in Groningen\n\n## Preferences\n- Confirm before making any booking or payment\n- Prefers restaurants that are easy to reach by train\n\n## Other\n- Works at Tidewater Freight\n- Drives an electric Kia",
+    "recall": "## People\n- Mother is Ria; her birthday is 14 November and she loves Indonesian food\n- Brother Thijmen lives in Groningen\n\n## Preferences\n- Confirm before making any booking or payment\n- Prefers restaurants that are easy to reach by train\n\n## Other\n- Works at Tidewater Freight\n- Drives an electric Kia",
     "relevant": [
       "Mother is Ria; her birthday is 14 November and she loves Indonesian food",
       "Confirm before making any booking or payment",
@@ -210,10 +210,10 @@
   },
   {
     "id": "rc-021",
-    "message": "what should I get Joris for his birthday?",
-    "recall": "## People\n- Partner Joris is into bouldering, sourdough baking and old Nintendo games; birthday 3 March\n- Sister Lotte lives in Leiden\n\n## Preferences\n- Prefers a few concrete suggestions over long lists\n- Usually spends around 100 euro on gifts\n\n## Work\n- Product manager at Tidewater Freight",
+    "message": "what should I get Roelof for his birthday?",
+    "recall": "## People\n- Partner Roelof is into bouldering, sourdough baking and old Nintendo games; birthday 3 March\n- Sister Lotte lives in Leiden\n\n## Preferences\n- Prefers a few concrete suggestions over long lists\n- Usually spends around 100 euro on gifts\n\n## Work\n- Product manager at Tidewater Freight",
     "relevant": [
-      "Partner Joris is into bouldering, sourdough baking and old Nintendo games; birthday 3 March",
+      "Partner Roelof is into bouldering, sourdough baking and old Nintendo games; birthday 3 March",
       "Prefers a few concrete suggestions over long lists",
       "Usually spends around 100 euro on gifts"
     ]
@@ -230,11 +230,11 @@
   },
   {
     "id": "rc-023",
-    "message": "schedule a call with Hendrik next week",
-    "recall": "## Work\n- Calendar is in Outlook; external calls use Teams links\n- Hendrik Vos at Brightwater Insurance prefers morning calls (Europe/Amsterdam)\n- Never schedule anything between 15:00 and 17:00 on weekdays (school pickup)\n- Quarterly Brightwater invoices go out on the first working day of the quarter\n\n## Personal\n- Training for the Rotterdam half marathon\n- Vegetarian",
+    "message": "schedule a call with Fokke next week",
+    "recall": "## Work\n- Calendar is in Outlook; external calls use Teams links\n- Fokke Ouderkerk at Brightwater Insurance prefers morning calls (Europe/Amsterdam)\n- Never schedule anything between 15:00 and 17:00 on weekdays (school pickup)\n- Quarterly Brightwater invoices go out on the first working day of the quarter\n\n## Personal\n- Training for the Rotterdam half marathon\n- Vegetarian",
     "relevant": [
       "Calendar is in Outlook; external calls use Teams links",
-      "Hendrik Vos at Brightwater Insurance prefers morning calls (Europe/Amsterdam)",
+      "Fokke Ouderkerk at Brightwater Insurance prefers morning calls (Europe/Amsterdam)",
       "Never schedule anything between 15:00 and 17:00 on weekdays (school pickup)"
     ]
   },

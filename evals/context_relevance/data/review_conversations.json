@@ -648,11 +648,11 @@
       },
       {
         "role": "user",
-        "text": "assign it to Ruben"
+        "text": "assign it to Hylke"
       },
       {
         "role": "assistant",
-        "text": "Assigned NW-412 to Ruben."
+        "text": "Assigned NW-412 to Hylke."
       }
     ],
     "label": true,
@@ -710,11 +710,11 @@
       },
       {
         "role": "user",
-        "text": "ok. heads up, I'm on parental leave until mid January, so only ping me for really urgent stuff. Ruben covers the rest"
+        "text": "ok. heads up, I'm on parental leave until mid January, so only ping me for really urgent stuff. Hylke covers the rest"
       },
       {
         "role": "assistant",
-        "text": "Understood. Until mid January I'll route anything non-urgent to Ruben and only flag outages or legal issues to you."
+        "text": "Understood. Until mid January I'll route anything non-urgent to Hylke and only flag outages or legal issues to you."
       },
       {
         "role": "user",
@@ -726,11 +726,11 @@
       },
       {
         "role": "user",
-        "text": "send that one to Ruben too"
+        "text": "send that one to Hylke too"
       },
       {
         "role": "assistant",
-        "text": "Forwarded it to Ruben with the deadline highlighted."
+        "text": "Forwarded it to Hylke with the deadline highlighted."
       }
     ],
     "label": true,

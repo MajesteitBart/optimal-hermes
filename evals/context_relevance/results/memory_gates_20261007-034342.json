@@ -217,11 +217,11 @@
     "keep": true,
     "replace": true,
     "overlap": [
-     "User's name is Maike.",
+     "User's name is Sjoukie.",
      "User works in marketing at Lumora."
     ],
     "target": "user",
-    "reason": "it updates the existing entry 'User's name is Maike.'; replace that entry (action='replace' with old_text from it) instead of adding a conflicting one"
+    "reason": "it updates the existing entry 'User's name is Sjoukie.'; replace that entry (action='replace' with old_text from it) instead of adding a conflicting one"
    },
    {
     "id": "mc-010",
@@ -2040,7 +2040,7 @@
      "Write in British English",
      "No emojis in anything written for the user",
      "Account manager for Brightwater Insurance",
-     "Main contact at Brightwater is Hendrik Vos, head of claims",
+     "Main contact at Brightwater is Fokke Ouderkerk, head of claims",
      "Quarterly business reviews cover claims volume, SLA breaches and the renewal pipeline"
     ],
     "items": [
@@ -2072,7 +2072,7 @@
       "kept": true
      },
      {
-      "text": "- Main contact at Brightwater is Hendrik Vos, head of claims",
+      "text": "- Main contact at Brightwater is Fokke Ouderkerk, head of claims",
       "scores": {
        "relevant": 0.76,
        "preference": 0.1,
@@ -2169,7 +2169,7 @@
     "relevant": [
      "Cutting at about 2,250 kcal with 165 g protein per day",
      "Vegetarian",
-     "Cooks dinner with partner Joris most weeknights",
+     "Cooks dinner with partner Roelof most weeknights",
      "Prefers metric units",
      "Dislikes coriander"
     ],
@@ -2193,7 +2193,7 @@
       "kept": true
      },
      {
-      "text": "- Cooks dinner with partner Joris most weeknights",
+      "text": "- Cooks dinner with partner Roelof most weeknights",
       "scores": {
        "relevant": 0.62,
        "preference": 0.11,
@@ -2420,7 +2420,7 @@
       "kept": true
      },
      {
-      "text": "- Brother Daan lives in Groningen",
+      "text": "- Brother Thijmen lives in Groningen",
       "scores": {
        "relevant": 0.14,
        "preference": 0.04,
@@ -3048,13 +3048,13 @@
    {
     "id": "rc-021",
     "relevant": [
-     "Partner Joris is into bouldering, sourdough baking and old Nintendo games; birthday 3 March",
+     "Partner Roelof is into bouldering, sourdough baking and old Nintendo games; birthday 3 March",
      "Prefers a few concrete suggestions over long lists",
      "Usually spends around 100 euro on gifts"
     ],
     "items": [
      {
-      "text": "- Partner Joris is into bouldering, sourdough baking and old Nintendo games; birthday 3 March",
+      "text": "- Partner Roelof is into bouldering, sourdough baking and old Nintendo games; birthday 3 March",
       "scores": {
        "relevant": 0.97,
        "preference": 0.05,
@@ -3159,7 +3159,7 @@
     "id": "rc-023",
     "relevant": [
      "Calendar is in Outlook; external calls use Teams links",
-     "Hendrik Vos at Brightwater Insurance prefers morning calls (Europe/Amsterdam)",
+     "Fokke Ouderkerk at Brightwater Insurance prefers morning calls (Europe/Amsterdam)",
      "Never schedule anything between 15:00 and 17:00 on weekdays (school pickup)"
     ],
     "items": [
@@ -3173,7 +3173,7 @@
       "kept": true
      },
      {
-      "text": "- Hendrik Vos at Brightwater Insurance prefers morning calls (Europe/Amsterdam)",
+      "text": "- Fokke Ouderkerk at Brightwater Insurance prefers morning calls (Europe/Amsterdam)",
       "scores": {
        "relevant": 0.9,
        "preference": 0.44,
