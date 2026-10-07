@@ -138,13 +138,14 @@ def load_selection_config(config: Optional[Mapping[str, Any]] = None) -> Selecti
 
 
 def agent_selection_config(agent: Any) -> SelectionConfig:
-    """``skills.selection`` resolved once per agent, so the system-prompt index and the per-turn
-    selection can never disagree within one agent's life."""
+    """``skills.selection`` resolved once per session, so the system-prompt index and the per-turn
+    selection can never disagree within one conversation."""
+    from agent.relevance import agent_config, sync_session
+
+    sync_session(agent)
     cached = getattr(agent, "_skill_selection_config", None)
     if isinstance(cached, SelectionConfig):
         return cached
-    from agent.relevance import agent_config
-
     try:
         resolved = load_selection_config(agent_config(agent))
     except Exception:

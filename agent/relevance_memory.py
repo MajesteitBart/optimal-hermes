@@ -100,12 +100,13 @@ def load_memory_gate_config(config: Optional[Mapping[str, Any]] = None) -> Memor
 
 
 def agent_memory_gate_config(agent: Any) -> MemoryGateConfig:
-    """Resolved once per agent (session-stable, like the rest of the memory config)."""
+    """Resolved once per session, like the rest of the memory config."""
+    from agent.relevance import agent_config, sync_session
+
+    sync_session(agent)
     cached = getattr(agent, "_memory_gate_config", None)
     if isinstance(cached, MemoryGateConfig):
         return cached
-    from agent.relevance import agent_config
-
     try:
         resolved = load_memory_gate_config(agent_config(agent))
     except Exception:
@@ -295,7 +296,9 @@ class MemoryWriteGate:
               old_text: Optional[str], operations: Optional[List[Dict[str, Any]]] = None) -> Optional[str]:
         pairs = _write_candidates(store, action, target, content, old_text, operations)
         refused_before = self._refused_before()
-        pending = [(c, o) for c, o in pairs if _fingerprint(target, c) not in refused_before]
+        # An entry already in the store is a no-op write (add is idempotent): nothing new to judge.
+        current = set(getattr(store, "user_entries" if target == "user" else "memory_entries", None) or ())
+        pending = [(c, o) for c, o in pairs if _fingerprint(target, c) not in refused_before and c not in current]
         if not pending:
             return None  # nothing new to judge, or the model insisted on a refused entry
         sim = entries_after_write(store, action, target, content, old_text, operations)
@@ -514,15 +517,21 @@ def gate_memory_review(agent: Any, messages: Sequence[Mapping[str, Any]]) -> boo
 
 def note_lasting_signal(agent: Any, probability: float) -> None:
     """Accumulate this turn's P(the user revealed something worth remembering)."""
+    from agent.relevance import sync_session
+
+    sync_session(agent)
     agent._memory_lasting_sum = float(getattr(agent, "_memory_lasting_sum", 0.0) or 0.0) + probability
 
 
 def review_due(agent: Any, nudged: bool) -> bool:
     """``memory.review_events``: the periodic nudge still fires on its own; on top of it, an early review
-    fires once the accumulated lasting signal passes REVIEW_EVENT_SUM. Either way the sum restarts."""
+    fires once the accumulated lasting signal passes REVIEW_EVENT_SUM. Nothing resets here: a turn that
+    ends interrupted spawns no review, so review_scheduled() restarts the sum once one is spawned."""
+    from agent.relevance import sync_session
+
+    sync_session(agent)
     total = float(getattr(agent, "_memory_lasting_sum", 0.0) or 0.0)
     if nudged:
-        agent._memory_lasting_sum = 0.0
         return True
     cfg = agent_memory_gate_config(agent)
     reviewable = (cfg.review_events and total >= REVIEW_EVENT_SUM and getattr(agent, "_memory_store", None)
@@ -530,11 +539,16 @@ def review_due(agent: Any, nudged: bool) -> bool:
                   and "memory" in (getattr(agent, "valid_tool_names", None) or ()))
     if not reviewable:
         return False
-    agent._memory_lasting_sum = 0.0
-    agent._turns_since_memory = 0
     logger.info("Memory review triggered early by accumulated lasting signal (%.2f)", total)
     relevance_ledger.record("review_trigger", session_id=getattr(agent, "session_id", None), lasting_sum=round(total, 3))
     return True
+
+
+def review_scheduled(agent: Any, review_memory: bool) -> None:
+    """A memory review was spawned: restart the lasting signal and the periodic count."""
+    if review_memory:
+        agent._memory_lasting_sum = 0.0
+        agent._turns_since_memory = 0
 
 
 # ── Past-conversation search rerank ─────────────────────────────────────────

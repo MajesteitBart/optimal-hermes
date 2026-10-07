@@ -241,3 +241,25 @@ class TestReviewRegressionsRound6:
         with pytest.raises(RelevanceResponseError):
             client.ask("s", {"b": NoulQuestion("?")})
         assert len(sent) < 64  # without a cap all 64 MB are read before parsing fails
+
+
+class TestReviewRegressionsRound11:
+    """Regressions from the PR review (round 11)."""
+
+    def test_a_blocked_body_read_cannot_outlast_the_call_budget(self, fake_systemone):
+        release, read_returned = threading.Event(), threading.Event()
+
+        class Stalls(httpx.SyncByteStream):
+            def __iter__(self):
+                yield b"{"
+                release.wait(10)  # a read blocked past the timeout: httpx restarts its clock per read
+                read_returned.set()
+                yield b"}"
+
+        fake_systemone.handle = lambda request: httpx.Response(200, stream=Stalls())
+        try:
+            with pytest.raises(RelevanceTimeout):
+                evaluate("s", {"b": NoulQuestion("?")}, settings=RelevanceSettings(timeout_seconds=0.5, max_retries=0))
+            assert not read_returned.is_set()  # the caller left while the read was still blocked
+        finally:
+            release.set()

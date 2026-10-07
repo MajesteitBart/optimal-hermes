@@ -24,7 +24,7 @@ from typing import Any, Callable, Mapping, Optional
 import httpx
 
 from agent.relevance_typesafe import (
-    DEFAULT_MODEL, MAX_REQUEST_TOKENS, Evaluation, NoulAnswer, NoulQuestion, Question, RelevanceError,
+    DEFAULT_MODEL, MAX_REQUEST_TOKENS, MAX_RETRY_WAIT_SECONDS, Evaluation, NoulAnswer, NoulQuestion, Question, RelevanceError,
     RelevanceRequestError, RelevanceResponseError, RelevanceTimeout, RelevanceUnavailable, ScoreAnswer,
     ScoreQuestion, SystemOneClient, build_payload, merge_evaluations, plan_batches,
 )
@@ -112,6 +112,35 @@ def api_key() -> Optional[str]:
     return value.strip() if isinstance(value, str) and value.strip() else None
 
 
+# Relevance state kept on the agent object. All of it belongs to one conversation.
+_SESSION_STATE = ("_skill_selection_config", "_memory_gate_config", "_skill_selection_warned",
+                  "_memory_gate_refused", "_memory_lasting_sum")
+
+
+def sync_session(agent: Any) -> None:
+    """Drop per-conversation relevance state once a reused agent moves to another session (/new and
+    /resume keep the same AIAgent), so the new session reads the current config and starts clean."""
+    try:
+        state = vars(agent)
+    except TypeError:
+        return
+    session = getattr(agent, "session_id", None)
+    if "_relevance_session" in state and state["_relevance_session"] == session:
+        return
+    for name in _SESSION_STATE:
+        state.pop(name, None)
+    state["_relevance_session"] = session
+
+
+def _call_budget(settings: RelevanceSettings, batches: int) -> float:
+    """How long a call without a turn deadline may take: every attempt and retry wait, per round of
+    parallel batches. httpx's read timeout restarts with every chunk, so a blocked read cannot be trusted
+    to end on its own."""
+    per_request = settings.timeout_seconds * (settings.max_retries + 1) + MAX_RETRY_WAIT_SECONDS * settings.max_retries
+    rounds = -(-batches // max(1, settings.max_concurrency))
+    return per_request * rounds
+
+
 def evaluate(
     state: Any, questions: Mapping[str, Question], *, settings: Optional[RelevanceSettings] = None,
     key: Optional[str] = None, transport: Optional[httpx.BaseTransport] = None,
@@ -134,8 +163,7 @@ def evaluate(
         client_kwargs["sleep"] = sleep
     client = SystemOneClient(key, **client_kwargs)
     started = time.monotonic()
-    if len(batches) == 1 and deadline is None:
-        return client.ask(state, batches[0], model=settings.model)
+    wait_until = deadline if deadline is not None else started + _call_budget(settings, len(batches))
     from agent.memory_provider import ctx_bound
 
     pool = ThreadPoolExecutor(max_workers=min(len(batches), settings.max_concurrency), thread_name_prefix="relevance")
@@ -143,8 +171,8 @@ def evaluate(
         # One context copy per request: a single bound copy cannot be entered by two threads at once.
         futures = [pool.submit(ctx_bound(client.ask), state, batch, model=settings.model) for batch in batches]
         # httpx timeouts are per phase (connect, send, each read), so a request can outlast the budget;
-        # the caller stops waiting at the deadline instead.
-        timeout = None if deadline is None else max(0.0, deadline - time.monotonic())
+        # the caller stops waiting at the deadline (or the call budget) instead.
+        timeout = max(0.0, wait_until - time.monotonic())
         done, pending = wait(futures, timeout=timeout, return_when=FIRST_EXCEPTION)
         failed = next((future.exception() for future in done if future.exception() is not None), None)
         if failed is not None:

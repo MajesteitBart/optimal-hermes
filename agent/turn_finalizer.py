@@ -785,6 +785,9 @@ def finalize_turn(
                 messages_snapshot=list(messages), review_memory=_should_review_memory,
                 review_skills=_should_review_skills,
             )
+            from agent.relevance_memory import review_scheduled
+
+            review_scheduled(agent, _should_review_memory)
 
     # Memory provider on_session_end()/shutdown_all() are NOT called here:
     # run_conversation() runs once per message; CLI/gateway own session-end cleanup.

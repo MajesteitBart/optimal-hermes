@@ -195,13 +195,16 @@ class TestReviewEvents:
         assert rm.review_due(agent, False) is False
         rm.note_lasting_signal(agent, 0.8)
         assert rm.review_due(agent, False) is True
+        rm.review_scheduled(agent, True)
         assert agent._memory_lasting_sum == 0.0 and agent._turns_since_memory == 0
 
     def test_off_never_triggers_and_a_nudge_always_does(self):
         agent = self._agent()
         rm.note_lasting_signal(agent, 5.0)
         assert rm.review_due(agent, False) is False
-        assert rm.review_due(agent, True) is True and agent._memory_lasting_sum == 0.0
+        assert rm.review_due(agent, True) is True
+        rm.review_scheduled(agent, True)
+        assert agent._memory_lasting_sum == 0.0
 
 
 RECALL = """## Preferences
@@ -581,3 +584,34 @@ class TestReviewRegressionsRound10:
         result = json.loads(_in_background_review(lambda: memory_tool(
             "replace", "memory", "It rained today.", old_text="Uses Linux.", store=store, write_gate=_gate(mode="advise"))))
         assert "relevance_note" in result  # approval replays the write without the gate
+
+
+class TestReviewRegressionsRound11:
+    """Regressions from the PR review (round 11)."""
+
+    def test_relevance_settings_follow_the_session(self):
+        from agent import relevance_skills as rs
+
+        write_config("skills:\n  selection:\n    enabled: true\nmemory:\n  write_gate: enforce\n")
+        agent = types.SimpleNamespace(session_id="s1")
+        assert rs.agent_selection_config(agent).enabled and rm.agent_memory_gate_config(agent).write_gate == "enforce"
+        write_config("skills:\n  selection:\n    enabled: false\nmemory:\n  write_gate: \"off\"\n")
+        assert rs.agent_selection_config(agent).enabled  # the same session keeps what it started with
+        agent.session_id = "s2"  # /new or /resume on the same agent
+        assert not rs.agent_selection_config(agent).enabled and rm.agent_memory_gate_config(agent).write_gate == "off"
+
+    def test_an_interrupted_early_review_keeps_its_signal(self):
+        write_config("memory:\n  review_events: true\n")
+        agent = types.SimpleNamespace(session_id="s1", _memory_store=object(), _memory_nudge_interval=10,
+                                      valid_tool_names={"memory"}, _turns_since_memory=4)
+        rm.note_lasting_signal(agent, 2.0)
+        assert rm.review_due(agent, False) is True
+        assert rm.review_due(agent, False) is True  # the turn was interrupted, so nothing scheduled it
+        rm.review_scheduled(agent, True)
+        assert rm.review_due(agent, False) is False and agent._turns_since_memory == 0
+
+    def test_an_idempotent_add_is_not_judged(self, fake_systemone):
+        fake_systemone.answer = nouls(durable=0.1, personal=0.1)
+        store = _store_with("Builds run on the ops-1 host.")
+        result = json.loads(memory_tool("add", "memory", "Builds run on the ops-1 host.", store=store, write_gate=_gate()))
+        assert result["success"] and fake_systemone.requests == []
