@@ -184,7 +184,8 @@ def build_skills_parser(subparsers, *, cmd_skills: Callable) -> None:
     # No -p: Hermes reads -p/--profile anywhere in argv, so a one-word task would select a profile.
     skills_select.add_argument("--prompt", dest="prompt_opt", default=None, help="The task, as an option")
     skills_select.add_argument("--context-file", default=None,
-        help="Recent conversation scored with the task: plain text, or a JSON list of {role, text}")
+        help="Recent conversation scored with the task: plain text, or a JSON list of {role, text}. Trimmed "
+             "like a chat: the last skills.selection.recent_messages entries, each cut to 600 characters")
     skills_select.add_argument("--min-score", type=float, default=None,
         help="Lowest score a skill needs (default: skills.selection.min_score)")
     skills_select.add_argument("--target", dest="target_score", type=float, default=None,

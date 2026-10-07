@@ -526,3 +526,18 @@ class TestReviewRegressionsRound7:
                 "b": {"snippet": "lunch plans", "source": "cli"},
                 "c": {"snippet": "the invoice bug", "source": "cli"}}
         assert list(_keep_most_relevant("invoice", seen, 2)) == ["c", "b"]
+
+
+class TestReviewRegressionsRound8:
+    """Regressions from the PR review (round 8)."""
+
+    def test_a_tool_heavy_turn_keeps_its_user_message_in_the_review_window(self, fake_systemone):
+        fact = "gateway listens on 8642"
+        fake_systemone.answer = lambda qid, q, state: 0.9 if qid == "environment" and fact in json.dumps(state) else 0.0
+        messages = [{"role": "user", "content": "set up the gateway"}]
+        for i in range(24):
+            messages.append({"role": "tool", "tool_call_id": f"c{i}", "content": f"step {i} ok" + (f": {fact}" if i == 20 else "")})
+        verdict = rm.review_worthwhile(messages)
+        assert verdict.run is True
+        conversation = fake_systemone.requests[0]["state"]["conversation"]
+        assert conversation[0] == {"role": "user", "text": "set up the gateway"}

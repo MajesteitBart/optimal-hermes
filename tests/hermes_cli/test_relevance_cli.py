@@ -181,3 +181,20 @@ class TestReviewRegressionsRound5:
         fake_systemone.answer = skill_scores({"pdf-tools": 2.0, "teams-notes": 9.0})
         assert cmd_skills_select(_args(prompt="summarize the meeting")) == 0
         assert [r["name"] for r in json.loads(capsys.readouterr().out)["ranked"]] == ["pdf-tools"]
+
+
+class TestReviewRegressionsRound8:
+    """Regressions from the PR review (round 8)."""
+
+    def test_the_preview_trims_context_like_the_agent(self, fake_systemone, capsys, tmp_path):
+        from hermes_cli.skills_select import cmd_skills_select
+
+        write_skill("pdf-tools", "Merge PDFs.")
+        rows = [{"role": "user" if i % 2 == 0 else "assistant", "text": f"message {i} " + "x" * 2000} for i in range(10)]
+        context = tmp_path / "ctx.json"
+        context.write_text(json.dumps(rows), encoding="utf-8")
+        assert cmd_skills_select(_args(prompt="merge them", context_file=str(context), dry_run=True)) == 0
+        recent = json.loads(capsys.readouterr().out)["requests"][0]["state"]["recent_conversation"]
+        # The agent sends skills.selection.recent_messages (4) earlier messages, each cut to 600 characters.
+        assert [r["text"].split()[1] for r in recent] == ["6", "7", "8", "9"]
+        assert all(len(r["text"]) <= 600 for r in recent)

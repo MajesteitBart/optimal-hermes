@@ -160,7 +160,7 @@ hermes skills select --format table --prompt "make a deck for the board meeting"
 hermes skills select --format context "merge these PDFs"   # the block the agent would get
 hermes skills select --dry-run "anything"                  # requests only, no key, no network
 echo "split this pdf" | hermes skills select -
-hermes skills select --context-file chat.json "ok do it"   # JSON list of {role, text}
+hermes skills select --context-file chat.json "ok do it"   # JSON list of {role, text}, trimmed like a chat
 ```
 
 `--min-score`, `--target` and `--budget` override the config for one run.

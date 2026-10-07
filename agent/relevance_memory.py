@@ -467,7 +467,11 @@ def review_worthwhile(
     # appear only in tool output, and the review itself reads them.
     conversation = recent_conversation(messages, limit=window, max_chars=500, tool_chars=REVIEW_TOOL_CHARS)
     if not any(m["role"] == "user" for m in conversation):
-        return ReviewVerdict(False, 0.0, {})
+        # A tool-heavy turn can push its own request out of the window; it frames the tool evidence.
+        last_user = recent_conversation([m for m in messages if m.get("role") == "user"], limit=1, max_chars=500)
+        if not last_user:
+            return ReviewVerdict(False, 0.0, {})
+        conversation = last_user + conversation[1:]
     result = evaluate({"conversation": conversation}, REVIEW_QUESTIONS, settings=settings, key=key,
                       transport=transport)
     scores = {k: _noul(result.answers, k) for k in REVIEW_QUESTIONS}

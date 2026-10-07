@@ -103,7 +103,7 @@ def _print_table(report: Any) -> None:
 def cmd_skills_select(args: Any) -> int:
     from agent.relevance import RelevanceError, api_key, describe_error, load_settings
     from agent.relevance_skills import (
-        api_key_hint, build_state, collect_candidates, outbound_requests, run_selection,
+        api_key_hint, build_state, collect_candidates, outbound_requests, recent_conversation, run_selection,
     )
     from agent.relevance_typesafe import TYPESAFE_ENDPOINT
 
@@ -117,6 +117,8 @@ def cmd_skills_select(args: Any) -> int:
         print("error: no task given (pass it as an argument, with --prompt, or '-' to read stdin)", file=sys.stderr)
         return 2
     cfg = _config_from_args(args)
+    # The agent sends the last recent_messages user/assistant messages, each cut to 600 characters.
+    recent = recent_conversation([{"role": r["role"], "content": r["text"]} for r in recent], limit=cfg.recent_messages)
     settings = load_settings()
     visibility = _cli_visibility()
     if args.dry_run:
