@@ -1327,6 +1327,13 @@ _PROMPT_NAME_BY_SCOPE = {
 }
 
 
+def _review_would_start(agent: Any, review_run: Optional[_BackgroundReviewRun], task_cfg: Optional[Dict[str, Any]]) -> bool:
+    """_run_review_in_thread's startup fences, for callers that would otherwise do work before it."""
+    if review_run is not None and review_run.cancel_requested.is_set():
+        return False
+    return _parent_can_emit_tool_calls(agent) or bool(_resolve_review_runtime(agent, task_cfg).get("routed"))
+
+
 def spawn_background_review_thread(
     agent: Any, messages_snapshot: List[Dict], review_memory: bool = False,
     review_skills: bool = False, focus: Optional[str] = None,
@@ -1353,8 +1360,10 @@ def spawn_background_review_thread(
     def _target() -> None:  # resolves _run_review_in_thread at call time (tests patch it)
         run_memory, run_prompt = review_memory, prompt
         # memory.review_gate: an automatic review whose recent turns hold nothing durable skips its
-        # memory half (checked here, on the review thread, so the user's turn never waits on it).
-        if review_memory and not focus and not explicit:
+        # memory half (checked here, on the review thread, so the user's turn never waits on it). A review
+        # that _run_review_in_thread would not start (cancelled, or a parent that cannot emit tool calls)
+        # goes straight there: it must not send the conversation out first.
+        if review_memory and not focus and not explicit and _review_would_start(agent, review_run, task_cfg):
             from agent.relevance_memory import gate_memory_review
 
             if not gate_memory_review(agent, messages_snapshot):

@@ -51,6 +51,7 @@ MAX_SUPERSEDE_CHECKS = 8
 STORE_MISMATCH_MIN = 0.8
 REVIEW_MIN = 0.7
 REVIEW_EVENT_SUM = 1.5  # summed per-turn P(lasting) that triggers an early memory review
+REVIEW_TOOL_CHARS = 400
 RECALL_RELEVANT_MIN = 0.3
 RECALL_PREFERENCE_MIN = 0.6
 RECALL_INJECTION_MIN = 0.8
@@ -462,7 +463,9 @@ def review_worthwhile(
     """Does the recent conversation hold anything worth a memory review? Raises RelevanceError."""
     from agent.relevance_skills import recent_conversation
 
-    conversation = recent_conversation(messages, limit=window, max_chars=500)
+    # Tool results included: MEMORY.md keeps environment facts (paths, endpoints, quirks) that often
+    # appear only in tool output, and the review itself reads them.
+    conversation = recent_conversation(messages, limit=window, max_chars=500, tool_chars=REVIEW_TOOL_CHARS)
     if not any(m["role"] == "user" for m in conversation):
         return ReviewVerdict(False, 0.0, {})
     result = evaluate({"conversation": conversation}, REVIEW_QUESTIONS, settings=settings, key=key,

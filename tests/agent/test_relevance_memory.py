@@ -487,3 +487,42 @@ class TestReviewRegressionsRound6:
         fake_systemone.answer = lambda qid, q, s: 0.9 if favoured in q["instructions"]["passage"] else 0.1
         reranked = [r["session_id"] for r in json.loads(session_search(query="modpack", limit=3, sort="newest", db=db))["results"]]
         assert reranked == plain and fake_systemone.requests == []
+
+
+class TestReviewRegressionsRound7:
+    """Regressions from the PR review (round 7)."""
+
+    def test_the_review_gate_sees_tool_output(self, fake_systemone):
+        fact = "gateway listens on 8642, config in /etc/hermes-gateway.yaml"
+        fake_systemone.answer = lambda qid, q, state: 0.9 if qid == "environment" and fact in json.dumps(state) else 0.0
+        messages = [{"role": "user", "content": "start the gateway"},
+                    {"role": "assistant", "content": "", "tool_calls": [
+                        {"id": "c1", "type": "function", "function": {"name": "terminal", "arguments": "{}"}}]},
+                    {"role": "tool", "tool_call_id": "c1", "content": f"ok: {fact}"},
+                    {"role": "assistant", "content": "Done, it is running."}]
+        assert rm.review_worthwhile(messages).run is True  # the fact exists only in the tool result
+
+    def test_a_cancelled_review_sends_nothing(self, fake_systemone):
+        import threading
+
+        from agent import background_review
+
+        write_config("memory:\n  review_gate: true\n")
+        run = types.SimpleNamespace(cancel_requested=threading.Event())
+        run.cancel_requested.set()
+        with patch.object(background_review, "_run_review_in_thread") as worker,                 patch.object(background_review, "finish_background_review_run"):
+            target, _ = background_review.spawn_background_review_thread(
+                types.SimpleNamespace(session_id="s1"), CONVERSATION, review_memory=True, task_cfg={}, review_run=run)
+            target()
+        assert fake_systemone.requests == []
+        worker.assert_called_once()  # its own startup fence finishes the cancelled run
+
+    def test_search_rerank_keeps_cron_sessions_below_interactive_ones(self, fake_systemone):
+        from tools.session_search_tool import _keep_most_relevant
+
+        write_config("memory:\n  search_rerank: true\n")
+        fake_systemone.answer = lambda qid, q, s: 0.9 if "invoice" in q["instructions"]["passage"] else 0.1
+        seen = {"a": {"snippet": "nightly invoice digest", "source": "cron"},
+                "b": {"snippet": "lunch plans", "source": "cli"},
+                "c": {"snippet": "the invoice bug", "source": "cli"}}
+        assert list(_keep_most_relevant("invoice", seen, 2)) == ["c", "b"]

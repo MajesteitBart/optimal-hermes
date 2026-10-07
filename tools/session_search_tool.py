@@ -446,6 +446,8 @@ def _keep_most_relevant(query: str, seen: Dict[str, Dict[str, Any]], limit: int)
     fixed = [k for k, v in seen.items() if v.get("_title_only")]
     order = rerank_order(query, [str(seen[k].get("snippet") or "") for k in keys])
     ranked = [keys[i] for i in order] if order is not None else keys
+    # Cron sessions stay below interactive ones (_DEMOTED_SESSION_SOURCES); relevance orders within each class.
+    ranked.sort(key=lambda k: (seen[k].get("source") or "") in _DEMOTED_SESSION_SOURCES)
     return {k: seen[k] for k in fixed + ranked[: max(0, limit - len(fixed))]}
 
 

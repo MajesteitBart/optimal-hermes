@@ -59,7 +59,8 @@ Each feature sends only the text its question needs:
   each skill's name, category and description. The close-read pass also sends the first 1,500
   characters of the SKILL.md bodies on the shortlist. Paths and full skill bodies stay local.
 - The write gate sends the candidate entry, the existing memory entries and your latest message.
-- The review gate sends the last 20 messages, each cut to 500 characters.
+- The review gate sends the last 20 messages, tool results included: tool output cut to 400
+  characters, other messages to 500.
 - The recall filter sends your message, up to four earlier messages and the recalled items.
 - Search rerank sends the query and the matching snippets.
 

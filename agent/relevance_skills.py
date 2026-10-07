@@ -588,8 +588,10 @@ def skills_in_context(messages: Sequence[Mapping[str, Any]], *, system_prompt: s
 
 def recent_conversation(
     messages: Sequence[Mapping[str, Any]], *, limit: int, max_chars: int = _RECENT_MESSAGE_MAX_CHARS,
+    tool_chars: int = 0,
 ) -> List[Dict[str, str]]:
-    """The last ``limit`` user/assistant texts (durable content, never injected context)."""
+    """The last ``limit`` user/assistant texts (durable content, never injected context); with
+    ``tool_chars``, tool results too, each cut to that length."""
     from agent.message_content import flatten_message_text
     from agent.skill_commands import extract_user_instruction_from_skill_message
 
@@ -598,13 +600,13 @@ def recent_conversation(
         if len(out) >= limit:
             break
         role = msg.get("role")
-        if role not in ("user", "assistant"):
+        if role not in ("user", "assistant") and not (role == "tool" and tool_chars):
             continue
         text = flatten_message_text(msg.get("content")).strip()
         if role == "user":
             text = (extract_user_instruction_from_skill_message(text) or "").strip()
         if text:
-            out.append({"role": role, "text": _clip(text, max_chars)})
+            out.append({"role": role, "text": _clip(text, tool_chars if role == "tool" else max_chars)})
     return list(reversed(out))
 
 
