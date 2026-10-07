@@ -40,6 +40,8 @@ data/
 # The Connectors page's wire layer (apps/desktop/src/app/capabilities/connectors/data/)
 # — same reason: the bare `data/` pattern above would otherwise swallow it.
 !apps/desktop/src/app/capabilities/connectors/data/
+# The context-relevance eval datasets are checked-in inputs (evals/context_relevance/README.md).
+!evals/context_relevance/data/
 .pytest_cache/
 test_durations.json
 .pytest-cache/

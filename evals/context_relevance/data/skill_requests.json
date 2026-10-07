@@ -1,0 +1,1594 @@
+[
+  {
+    "id": "sr-001",
+    "kind": "single",
+    "text": "can u pull the transcript from this and turn it into a 6 tweet thread? https://www.youtube.com/watch?v=Qx81mPz0aLw  just the text, I'll post it myself",
+    "recent": [],
+    "gold": [
+      "youtube-content"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-002",
+    "kind": "single",
+    "text": "disk on the build server is at 97%, docker system df says 41GB of build cache plus a pile of dangling images. clean it up but dont touch the volumes",
+    "recent": [],
+    "gold": [
+      "docker-management"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-003",
+    "kind": "single",
+    "text": "need a fillable signup form for the volunteer day as a PDF: name, email, tshirt size dropdown (S to XXL), checkbox for photo consent",
+    "recent": [],
+    "gold": [
+      "pdf"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-004",
+    "kind": "single",
+    "text": "fill contract_template.docx with the values in client.json ({{client_name}}, {{start_date}}, {{fee}}) and keep legal's tracked changes intact",
+    "recent": [],
+    "gold": [
+      "docx"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-005",
+    "kind": "single",
+    "text": "turn sales_q3.csv into a proper workbook: one sheet per region, a summary tab with totals and a bar chart on it. freeze the header row pls",
+    "recent": [],
+    "gold": [
+      "xlsx"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-006",
+    "kind": "single",
+    "text": "build the all-hands deck from these notes, 8-10 slides, on our brand template at templates/brand.pptx. speaker notes on every slide",
+    "recent": [],
+    "gold": [
+      "powerpoint"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-007",
+    "kind": "single",
+    "text": "Build a DCF for Northwind Logistics off the 10-K numbers I attached. 5 year projection, WACC around 9%, and a sensitivity grid of terminal growth vs WACC",
+    "recent": [],
+    "gold": [
+      "dcf-model"
+    ],
+    "acceptable": [
+      "excel-author"
+    ]
+  },
+  {
+    "id": "sr-008",
+    "kind": "single",
+    "text": "what are the markets actually pricing for a december rate cut? real odds, not pundits",
+    "recent": [],
+    "gold": [
+      "polymarket"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-009",
+    "kind": "single",
+    "text": "what does 0x4f3A9b2c7E1d08aB55c0F9e2D61b7aC3e9F1c91e hold on base and arbitrum? and does it have any sketchy token approvals",
+    "recent": [],
+    "gold": [
+      "evm"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-010",
+    "kind": "single",
+    "text": "pull my fills and funding payments on hyperliquid for the last 7 days (wallet 0x8cD1e0F4a7B2c93D5e61f0A8b4C2d7E9f3a172aF) and tell me where I bled money",
+    "recent": [],
+    "gold": [
+      "hyperliquid"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-011",
+    "kind": "single",
+    "text": "bedroom lights to 20% and warm white, im reading",
+    "recent": [],
+    "gold": [
+      "openhue"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-012",
+    "kind": "single",
+    "text": "where's my backpack? the one with the airtag in it. left it somewhere this afternoon",
+    "recent": [],
+    "gold": [
+      "findmy"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-013",
+    "kind": "single",
+    "text": "make a note called 'Lisbon packing' in the Travel folder of my Notes app so it's on my phone: adapters, sunscreen, the blue jacket, passport",
+    "recent": [],
+    "gold": [
+      "apple-notes"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-014",
+    "kind": "single",
+    "text": "append todays standup bullets to my daily note in the vault and link it to [[Project Heron]]",
+    "recent": [],
+    "gold": [
+      "obsidian"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-015",
+    "kind": "single",
+    "text": "add a row to the Content Pipeline db in notion: title 'Pricing page rewrite', status Draft, owner Maaike, due next friday",
+    "recent": [],
+    "gold": [
+      "notion"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-016",
+    "kind": "single",
+    "text": "in the Leads base, flag every record where Stage is 'Demo booked' and last contact is older than 14 days as Stale",
+    "recent": [],
+    "gold": [
+      "airtable"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-017",
+    "kind": "single",
+    "text": "how many unfulfilled orders older than 3 days do we have in the store? list them with customer and total, I need to chase the warehouse",
+    "recent": [],
+    "gold": [
+      "shopify"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-018",
+    "kind": "single",
+    "text": "find me trail running shoes under 120 euro, size 44, wide fit, and buy the best rated pair if it's in stock",
+    "recent": [],
+    "gold": [
+      "shop"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-019",
+    "kind": "single",
+    "text": "whats on my calendar tomorrow, and does anything clash with the dentist at 3?",
+    "recent": [],
+    "gold": [
+      "google-workspace"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-020",
+    "kind": "single",
+    "text": "my mail is on fastmail over IMAP and the terminal mail client is already configured. list unread from the last 2 days",
+    "recent": [],
+    "gold": [
+      "himalaya"
+    ],
+    "acceptable": [
+      "email-inbox-triage"
+    ]
+  },
+  {
+    "id": "sr-021",
+    "kind": "single",
+    "text": "go through my inbox and tell me what actually needs me today. draft replies for the urgent ones but DON'T send anything",
+    "recent": [],
+    "gold": [
+      "email-inbox-triage"
+    ],
+    "acceptable": [
+      "google-workspace",
+      "himalaya"
+    ]
+  },
+  {
+    "id": "sr-022",
+    "kind": "single",
+    "text": "the vendor signup sends a verification code by email. give the agent its own address so it can recieve the code itself",
+    "recent": [],
+    "gold": [
+      "agentmail"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-023",
+    "kind": "single",
+    "text": "I want the assistant to have its own phone number so it can get SMS codes and text me when the nightly job fails",
+    "recent": [],
+    "gold": [
+      "telephony"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-024",
+    "kind": "single",
+    "text": "ping me if the Sony WH-1000XM6 goes under 280 euro at a proper retailer, shipping included",
+    "recent": [],
+    "gold": [
+      "product-price-monitor"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-025",
+    "kind": "single",
+    "text": "does kestrelworks.dev/blog have a feed? show me their last 10 posts with dates",
+    "recent": [],
+    "gold": [
+      "rss-feeds"
+    ],
+    "acceptable": [
+      "blogwatcher"
+    ]
+  },
+  {
+    "id": "sr-026",
+    "kind": "single",
+    "text": "hand the payments refactor to codex, let it work in its own worktree and check on it every few minutes",
+    "recent": [],
+    "gold": [
+      "codex"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-027",
+    "kind": "single",
+    "text": "the summary for yesterday's client call in Teams never showed up. is the pipeline stuck or did the graph subscription expire again?",
+    "recent": [],
+    "gold": [
+      "teams-meeting-pipeline"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-028",
+    "kind": "single",
+    "text": "need a slow clap reaction gif for the team chat",
+    "recent": [],
+    "gold": [
+      "gif-search"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-029",
+    "kind": "single",
+    "text": "rough whiteboard-style flowchart of our refund process, something I can open in the browser later and drag boxes around",
+    "recent": [],
+    "gold": [
+      "excalidraw"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-030",
+    "kind": "single",
+    "text": "20 second promo video made from our landing page: animated title cards, captions, a beat-synced outro. render to mp4",
+    "recent": [],
+    "gold": [
+      "hyperframes"
+    ],
+    "acceptable": [
+      "brag",
+      "brag-slim"
+    ]
+  },
+  {
+    "id": "sr-031",
+    "kind": "single",
+    "text": "write lyrics for my sisters 30th, indie folk vibe, some inside jokes about her terrible parking, and give me the style prompt to paste into suno",
+    "recent": [],
+    "gold": [
+      "songwriting-and-ai-music"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-032",
+    "kind": "single",
+    "text": "kun je even de lines of code per taal geven voor deze repo? need it for the sprint review slide",
+    "recent": [],
+    "gold": [
+      "codebase-inspection"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-033",
+    "kind": "single",
+    "text": "swap every console.log(...) in src/ for logger.debug(...), but only real calls. there's a ton of 'console.log' inside strings and comments that has to stay",
+    "recent": [],
+    "gold": [
+      "ast-grep"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-034",
+    "kind": "single",
+    "text": "the node worker's memory climbs for a few hours until it gets OOM killed. grab a heap snapshot from the running process so we can see what's holding on",
+    "recent": [],
+    "gold": [
+      "node-inspect-debugger"
+    ],
+    "acceptable": [
+      "systematic-debugging"
+    ]
+  },
+  {
+    "id": "sr-035",
+    "kind": "single",
+    "text": "the python ingest worker is hung and I can't restart it. attach to it and break inside process_batch so we can look at the locals",
+    "recent": [],
+    "gold": [
+      "python-debugpy"
+    ],
+    "acceptable": [
+      "systematic-debugging"
+    ]
+  },
+  {
+    "id": "sr-036",
+    "kind": "single",
+    "text": "review PR #482 on northwind/billing-svc, leave inline comments, and request changes if the migration isn't reversible",
+    "recent": [],
+    "gold": [
+      "github"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-037",
+    "kind": "single",
+    "text": "before I commit this, run a review pass over my changes, security stuff especially. touched like 6 files",
+    "recent": [],
+    "gold": [
+      "requesting-code-review"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-038",
+    "kind": "single",
+    "text": "my last few commits got messy: duplicated helpers, a couple of nested loops that could be a dict lookup. tidy it up",
+    "recent": [],
+    "gold": [
+      "simplify-code"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-039",
+    "kind": "single",
+    "text": "quick throwaway test: can sqlite FTS5 search 2M product titles under 50ms on my laptop? don't build the real feature, I just want to know before we commit to it",
+    "recent": [],
+    "gold": [
+      "spike"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-040",
+    "kind": "single",
+    "text": "give me 3 rough directions for the settings page as clickable html so I can compare them side by side. nothing production",
+    "recent": [],
+    "gold": [
+      "sketch"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-041",
+    "kind": "single",
+    "text": "landing page for our meditation app Stillwater. one page, I want it to feel cinematic and not like every other AI generated site",
+    "recent": [],
+    "gold": [
+      "auteur"
+    ],
+    "acceptable": [
+      "impeccable"
+    ]
+  },
+  {
+    "id": "sr-042",
+    "kind": "single",
+    "text": "restyle the dashboard so it looks like Linear: same spacing, the type, that muted palette",
+    "recent": [],
+    "gold": [
+      "popular-web-designs"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-043",
+    "kind": "single",
+    "text": "click through staging.parcelbee.io like a normal user, find bugs, and write them up with screenshots and repro steps",
+    "recent": [],
+    "gold": [
+      "dogfood"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-044",
+    "kind": "single",
+    "text": "pretend you're a 70 year old who hates apps and go through our onboarding. what would make you give up? then tell me which complaints are real problems",
+    "recent": [],
+    "gold": [
+      "adversarial-ux-test"
+    ],
+    "acceptable": [
+      "dogfood"
+    ]
+  },
+  {
+    "id": "sr-045",
+    "kind": "single",
+    "text": "stop reading the stripe key from .env. set up the op cli so you pull it from the Engineering vault instead",
+    "recent": [],
+    "gold": [
+      "1password"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-046",
+    "kind": "single",
+    "text": "the payment provider needs to hit my webhook on localhost:3000. give me a public url for it, there's no ngrok on this machine",
+    "recent": [],
+    "gold": [
+      "pinggy-tunnel"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-047",
+    "kind": "single",
+    "text": "deploy this worker script to a live url real quick so I can curl it. no cloudflare account and I don't want one yet",
+    "recent": [],
+    "gold": [
+      "cloudflare-temporary-deploy"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-048",
+    "kind": "single",
+    "text": "fine-tune llama 3.1 8b on our support tickets with qlora, single 24gb card, want it fast and easy on vram",
+    "recent": [],
+    "gold": [
+      "unsloth"
+    ],
+    "acceptable": [
+      "peft",
+      "axolotl",
+      "trl-fine-tuning"
+    ]
+  },
+  {
+    "id": "sr-049",
+    "kind": "single",
+    "text": "serve qwen 32b on our 2x A100 box behind an openai compatible endpoint, needs high throughput for the batch jobs",
+    "recent": [],
+    "gold": [
+      "serving-llms-vllm"
+    ],
+    "acceptable": [
+      "tensorrt-llm"
+    ]
+  },
+  {
+    "id": "sr-050",
+    "kind": "single",
+    "text": "which gguf quant of mistral small fits in 16gb on my macbook, and what's the server command to run it",
+    "recent": [],
+    "gold": [
+      "llama-cpp"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-051",
+    "kind": "single",
+    "text": "I keep getting broken json back from the model. want pydantic validation with automatic retries on the extraction step",
+    "recent": [],
+    "gold": [
+      "instructor"
+    ],
+    "acceptable": [
+      "outlines",
+      "guidance"
+    ]
+  },
+  {
+    "id": "sr-052",
+    "kind": "single",
+    "text": "list the tools on the linear mcp server from the terminal and call search_issues with 'billing'",
+    "recent": [],
+    "gold": [
+      "mcporter"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-053",
+    "kind": "single",
+    "text": "change hermes to a synthwave look, pink and teal",
+    "recent": [],
+    "gold": [
+      "hermes-agent"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-054",
+    "kind": "single",
+    "text": "we have to pick how to run background jobs (celery vs rq vs plain cron). lay out the options and give me one recommendation I can forward to the team",
+    "recent": [],
+    "gold": [
+      "one-three-one-rule"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-055",
+    "kind": "single",
+    "text": "scrape all the product pages on this shop. it's behind a cloudflare turnstile and web_extract returns nothing",
+    "recent": [],
+    "gold": [
+      "scrapling"
+    ],
+    "acceptable": [
+      "blocked-page-recovery"
+    ]
+  },
+  {
+    "id": "sr-056",
+    "kind": "multi",
+    "text": "pull the transcript from this lecture https://youtu.be/k3Jd9sPq2Lm and file it into my research wiki, update whatever concept pages it touches",
+    "recent": [],
+    "gold": [
+      "youtube-content",
+      "llm-wiki"
+    ],
+    "acceptable": [
+      "obsidian"
+    ]
+  },
+  {
+    "id": "sr-057",
+    "kind": "multi",
+    "text": "transcribe the recording of todays call (call-0611.mp3), pull out who owns what, and open a github issue in northwind/roadmap for each action item",
+    "recent": [],
+    "gold": [
+      "whisper",
+      "meeting-action-items",
+      "github"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-058",
+    "kind": "multi",
+    "text": "research where solid-state batteries actually stand in 2026, write it up as a word doc with proper sources, and email it to my manager from gmail",
+    "recent": [],
+    "gold": [
+      "grounded-citations",
+      "docx",
+      "google-workspace"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-059",
+    "kind": "multi",
+    "text": "read the lease pdf, find every deadline (notice period, rent review, insurance renewal) and put them in my google calendar with a reminder a week before",
+    "recent": [],
+    "gold": [
+      "document-to-action-items",
+      "google-workspace"
+    ],
+    "acceptable": [
+      "pdf"
+    ]
+  },
+  {
+    "id": "sr-060",
+    "kind": "multi",
+    "text": "build a comps table for these 6 vertical SaaS names, then 3 slides summarising the multiples for the IC memo",
+    "recent": [],
+    "gold": [
+      "comps-analysis",
+      "pptx-author"
+    ],
+    "acceptable": [
+      "excel-author",
+      "stocks",
+      "powerpoint"
+    ]
+  },
+  {
+    "id": "sr-061",
+    "kind": "multi",
+    "text": "what's r/selfhosted saying about the new immich release? summarize the main complaints and add them to the 'Competitor feedback' page in our notion",
+    "recent": [],
+    "gold": [
+      "reddit-reading",
+      "notion"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-062",
+    "kind": "multi",
+    "text": "transcribe my recording of the bio lecture (bio_lecture.m4a) and turn it into flashcards, then quiz me on friday",
+    "recent": [],
+    "gold": [
+      "whisper",
+      "memento-flashcards"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-063",
+    "kind": "multi",
+    "text": "fine-tune mistral 7b with lora through axolotl and log the whole thing to wandb so I can compare runs",
+    "recent": [],
+    "gold": [
+      "axolotl",
+      "weights-and-biases"
+    ],
+    "acceptable": [
+      "peft"
+    ]
+  },
+  {
+    "id": "sr-064",
+    "kind": "multi",
+    "text": "make a status dashboard of our open github issues by label that refreshes every morning, and put it online with a link I can share",
+    "recent": [],
+    "gold": [
+      "live-dashboard",
+      "publish-site"
+    ],
+    "acceptable": [
+      "github",
+      "here-now"
+    ]
+  },
+  {
+    "id": "sr-065",
+    "kind": "multi",
+    "text": "wrap our crm api as an mcp server in python and expose it on a public tunnel so Femke can test it from her laptop",
+    "recent": [],
+    "gold": [
+      "fastmcp",
+      "pinggy-tunnel"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-066",
+    "kind": "multi",
+    "text": "/orders keeps returning 401 on staging even with a fresh token. find out why, and write a failing test for it before you fix anything",
+    "recent": [],
+    "gold": [
+      "rest-graphql-debug",
+      "test-driven-development"
+    ],
+    "acceptable": [
+      "systematic-debugging"
+    ]
+  },
+  {
+    "id": "sr-067",
+    "kind": "multi",
+    "text": "we're vetting a vendor called Quillstone Labs. check their domain quillstonelabs.io (whois, certs, subdomains) and see which platforms the handle 'quillstonelabs' has accounts on",
+    "recent": [],
+    "gold": [
+      "domain-intel",
+      "sherlock"
+    ],
+    "acceptable": [
+      "osint-investigation"
+    ]
+  },
+  {
+    "id": "sr-068",
+    "kind": "multi",
+    "text": "find the invoice from Hartwell Printing in my gmail and put the line items in a spreadsheet, one row per item, VAT in its own column",
+    "recent": [],
+    "gold": [
+      "google-workspace",
+      "xlsx"
+    ],
+    "acceptable": [
+      "pdf"
+    ]
+  },
+  {
+    "id": "sr-069",
+    "kind": "multi",
+    "text": "zoek een paar goede koffietentjes vlak bij station Gent-Sint-Pieters en stuur de lijst naar Joris via iMessage",
+    "recent": [],
+    "gold": [
+      "maps",
+      "imessage"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-070",
+    "kind": "multi",
+    "text": "set up a weekly watch on Fernhill Analytics and Corvo Data (pricing changes, launches, funding) and drop each digest into our Notion competitors page",
+    "recent": [],
+    "gold": [
+      "competitor-news-monitor",
+      "notion"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-071",
+    "kind": "multi",
+    "text": "run mmlu and gsm8k on my checkpoint, but I don't have a gpu, so rent one serverless just for the run",
+    "recent": [],
+    "gold": [
+      "evaluating-llms-harness",
+      "modal"
+    ],
+    "acceptable": [
+      "lambda-labs"
+    ]
+  },
+  {
+    "id": "sr-072",
+    "kind": "multi",
+    "text": "image search over our 40k product photos: embed them with clip and store them in qdrant with sku and category as filters",
+    "recent": [],
+    "gold": [
+      "clip",
+      "qdrant"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-073",
+    "kind": "multi",
+    "text": "generate a full song locally from these lyrics with an open model, no suno, and make pixel-art cover art from our band photo",
+    "recent": [],
+    "gold": [
+      "heartmula",
+      "pixel-art"
+    ],
+    "acceptable": [
+      "songwriting-and-ai-music"
+    ]
+  },
+  {
+    "id": "sr-074",
+    "kind": "multi",
+    "text": "this launch tweet reads like a bot wrote it. make it sound like a person and then post it from @lumorahq",
+    "recent": [],
+    "gold": [
+      "humanizer",
+      "xurl"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-075",
+    "kind": "multi",
+    "text": "find recent arxiv work on kv-cache compression and draft the related work section of our ICLR submission from it",
+    "recent": [],
+    "gold": [
+      "arxiv",
+      "research-paper-writing"
+    ],
+    "acceptable": [
+      "grounded-citations"
+    ]
+  },
+  {
+    "id": "sr-076",
+    "kind": "none",
+    "text": "explain what a monad is, I know promises in js if that helps",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-077",
+    "kind": "none",
+    "text": "morning! hows your day going",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-078",
+    "kind": "none",
+    "text": "thx, that fixed it",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-079",
+    "kind": "none",
+    "text": "TCP vs UDP, two sentences max",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-080",
+    "kind": "none",
+    "text": "do you think juniors learn faster remote or in the office? curious what you think",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-081",
+    "kind": "none",
+    "text": "write a haiku about monday standups",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-082",
+    "kind": "none",
+    "text": "translate 'we'll get back to you by the end of the week' into formal german",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-083",
+    "kind": "none",
+    "text": "whats 15% of 2340",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-084",
+    "kind": "none",
+    "text": "regex for a dutch postcode like 1234 AB, space optional",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-085",
+    "kind": "none",
+    "text": "who won the 2010 world cup final?",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-086",
+    "kind": "none",
+    "text": "python one-liner to flatten a list of lists?",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-087",
+    "kind": "none",
+    "text": "gif or jif. settle it",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-088",
+    "kind": "none",
+    "text": "I've been feeling pretty burnt out lately and I'm not sure what to do about it",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-089",
+    "kind": "none",
+    "text": "explain the CAP theorem with a real example",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-090",
+    "kind": "none",
+    "text": "rename tmp to retry_count in utils.py, it's only used in that one function",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-091",
+    "kind": "none",
+    "text": "set a 25 minute timer, doing a pomodoro",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-092",
+    "kind": "none",
+    "text": "summarize in 3 bullets:\n\nOur Q3 support volume rose 18% after the pricing change, mostly billing questions. First response time held at 2h, but resolution time doubled because refunds now need finance sign-off. The team suggests a self-serve refund flow for orders under 50 euro.",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-093",
+    "kind": "none",
+    "text": "how do I center a div both horizontally and vertically",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-094",
+    "kind": "none",
+    "text": "tabs or spaces? and don't say 'it depends'",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-095",
+    "kind": "none",
+    "text": "fix the typo in the README heading, it says 'Instalation'",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-096",
+    "kind": "none",
+    "text": "write a cover letter for a PM role at a fintech. my background: 4 yrs product at a logistics startup, before that 3 yrs as a data analyst at a bank",
+    "recent": [],
+    "gold": [],
+    "acceptable": [
+      "humanizer"
+    ]
+  },
+  {
+    "id": "sr-097",
+    "kind": "none",
+    "text": "proofread this: 'Their going to announce the results tomorrow, weather or not the board agrees.'",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-098",
+    "kind": "none",
+    "text": "lol ok",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-099",
+    "kind": "none",
+    "text": "intuitively, how does attention in transformers work?",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-100",
+    "kind": "none",
+    "text": "what can I make for dinner with leftover rice, eggs and some sad spring onions",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-101",
+    "kind": "none",
+    "text": "72F in celsius?",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-102",
+    "kind": "none",
+    "text": "hoe laat gaat de zon vandaag onder in Amsterdam?",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-103",
+    "kind": "none",
+    "text": "write a postgres query for the top 3 customers by revenue per month",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-104",
+    "kind": "none",
+    "text": "schrijf een kort bedankberichtje aan het team voor de release van gisteren, informeel",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-105",
+    "kind": "none",
+    "text": "whats the difference between a roth ira and a traditional ira",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-106",
+    "kind": "near_miss",
+    "text": "how does the cache key thing in github actions work? just explain it, I'm not changing anything yet",
+    "recent": [],
+    "gold": [],
+    "acceptable": [
+      "github"
+    ]
+  },
+  {
+    "id": "sr-107",
+    "kind": "near_miss",
+    "text": "post this on our company's mastodon account: 'v2.3 is out, faster sync and a new dark mode'",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-108",
+    "kind": "near_miss",
+    "text": "put 'call the plumber' in my todoist for tomorrow morning",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-109",
+    "kind": "near_miss",
+    "text": "how much is a flight AMS to LIS on the 14th right now?",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-110",
+    "kind": "near_miss",
+    "text": "convert clip.mp4 to a gif, 480px wide, just the first 5 seconds",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-111",
+    "kind": "near_miss",
+    "text": "summarize this vimeo talk for me: https://vimeo.com/812345678",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-112",
+    "kind": "near_miss",
+    "text": "summarize the Teams chat in the design channel from today, people were arguing about the new nav",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-113",
+    "kind": "near_miss",
+    "text": "zet de lampen in de woonkamer uit, het zijn ikea dirigera lampen",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-114",
+    "kind": "near_miss",
+    "text": "the meeting was on google meet, not teams. transcript is below, who's doing what and what did we decide?\n\nSanne: I'll take the pricing page copy, aiming for Thursday.\nRuben: then I'll hold the release until that's in.\nSanne: fine. Ruben also needs to ping legal about the new terms.\nRuben: yep, today.",
+    "recent": [],
+    "gold": [
+      "meeting-action-items"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-115",
+    "kind": "near_miss",
+    "text": "review MR !87 on our self-hosted gitlab and leave comments on the diff",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-116",
+    "kind": "near_miss",
+    "text": "where is my samsung galaxy? pretty sure I left it at the gym",
+    "recent": [],
+    "gold": [],
+    "acceptable": []
+  },
+  {
+    "id": "sr-117",
+    "kind": "near_miss",
+    "text": "turn the output of the LBO model into a 5 slide deck for the partners meeting",
+    "recent": [],
+    "gold": [
+      "pptx-author"
+    ],
+    "acceptable": [
+      "powerpoint"
+    ]
+  },
+  {
+    "id": "sr-118",
+    "kind": "near_miss",
+    "text": "need a clean labeled diagram of a plant cell for my daughter's biology homework",
+    "recent": [],
+    "gold": [
+      "concept-diagrams"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-119",
+    "kind": "near_miss",
+    "text": "before I write any code: here's my plan for moving auth from sessions to JWTs. poke holes in it and ask me the hard questions",
+    "recent": [],
+    "gold": [
+      "grill-me"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-120",
+    "kind": "near_miss",
+    "text": "what has u/kalebxv been posting lately? someone said he's spamming r/homelab with referral links",
+    "recent": [],
+    "gold": [
+      "reddit-reading"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-121",
+    "kind": "followup",
+    "text": "reply to ilse that I'll pay it friday",
+    "recent": [
+      {
+        "role": "user",
+        "text": "check what's unread in my fastmail, the himalaya setup should still work"
+      },
+      {
+        "role": "assistant",
+        "text": "4 unread: Ilse van Dam (invoice #2231), the co-working newsletter, and two GitHub notifications."
+      }
+    ],
+    "gold": [
+      "himalaya"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-122",
+    "kind": "followup",
+    "text": "and this one 9wFFyRfZBsuAha4YcuxcXLKwMxJR43S7fPfQLusDBzvT",
+    "recent": [
+      {
+        "role": "user",
+        "text": "what's in 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU?"
+      },
+      {
+        "role": "assistant",
+        "text": "That Solana wallet holds 412.6 SOL (about $61k), 18,000 JUP and 3 NFTs."
+      }
+    ],
+    "gold": [
+      "solana"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-123",
+    "kind": "followup",
+    "text": "ok merge it once it's green, squash",
+    "recent": [
+      {
+        "role": "user",
+        "text": "open a PR for the retry-on-429 branch in northwind/api"
+      },
+      {
+        "role": "assistant",
+        "text": "Opened PR #91 'fix: retry on 429'. CI is running, 2 of 5 checks done."
+      }
+    ],
+    "gold": [
+      "github"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-124",
+    "kind": "followup",
+    "text": "what if leverage is 4x and the exit multiple drops a turn",
+    "recent": [
+      {
+        "role": "user",
+        "text": "build an LBO for Pellucid Foods, 5x leverage, 5 year hold, exit at the entry multiple"
+      },
+      {
+        "role": "assistant",
+        "text": "Model built in pellucid_lbo.xlsx: IRR 21.4%, MOIC 2.6x."
+      }
+    ],
+    "gold": [
+      "lbo-model"
+    ],
+    "acceptable": [
+      "excel-author"
+    ]
+  },
+  {
+    "id": "sr-125",
+    "kind": "followup",
+    "text": "kitchen too. and make it warmer",
+    "recent": [
+      {
+        "role": "user",
+        "text": "dim the living room to 30%"
+      },
+      {
+        "role": "assistant",
+        "text": "Living room set to 30%."
+      }
+    ],
+    "gold": [
+      "openhue"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-126",
+    "kind": "followup",
+    "text": "compare it with msft and googl ytd",
+    "recent": [
+      {
+        "role": "user",
+        "text": "price of AAPL?"
+      },
+      {
+        "role": "assistant",
+        "text": "AAPL is at $228.40, up 0.8% today."
+      }
+    ],
+    "gold": [
+      "stocks"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-127",
+    "kind": "followup",
+    "text": "the second one",
+    "recent": [
+      {
+        "role": "user",
+        "text": "can you keep an eye on fastapi releases for me"
+      },
+      {
+        "role": "assistant",
+        "text": "I can check the latest release once now, or set up something that polls on a schedule and only pings you when a new release appears. Which do you want?"
+      }
+    ],
+    "gold": [
+      "watchers"
+    ],
+    "acceptable": [
+      "rss-feeds"
+    ]
+  },
+  {
+    "id": "sr-128",
+    "kind": "followup",
+    "text": "yes go",
+    "recent": [
+      {
+        "role": "user",
+        "text": "our test suite fails in CI about 1 in 5 runs, never locally"
+      },
+      {
+        "role": "assistant",
+        "text": "Before changing anything I'd like to reproduce it and narrow it down: run the suite 20 times with the CI seed, compare the order of the failing tests, then test one hypothesis at a time. Want me to start?"
+      }
+    ],
+    "gold": [
+      "systematic-debugging"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-129",
+    "kind": "followup",
+    "text": "fix those two and export it as a tailwind config",
+    "recent": [
+      {
+        "role": "user",
+        "text": "write a DESIGN.md for our brand: primary #1F6FEB, accent #F78166, Inter for text"
+      },
+      {
+        "role": "assistant",
+        "text": "Created DESIGN.md. Two color pairs fail WCAG AA contrast: accent on white, and muted text on the surface color."
+      }
+    ],
+    "gold": [
+      "design-md"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-130",
+    "kind": "followup",
+    "text": "and next week, only the stats course",
+    "recent": [
+      {
+        "role": "user",
+        "text": "what's due this week on canvas?"
+      },
+      {
+        "role": "assistant",
+        "text": "Three assignments: Stats 201 problem set 4 (Thu), Econ essay draft (Fri), Bio lab report (Sun)."
+      }
+    ],
+    "gold": [
+      "canvas"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-131",
+    "kind": "followup",
+    "text": "now group by month and plot it",
+    "recent": [
+      {
+        "role": "user",
+        "text": "load sales.parquet in a notebook and show me the top regions"
+      },
+      {
+        "role": "assistant",
+        "text": "Kernel is up. Top regions by revenue: Benelux 4.1M, DACH 3.7M, Nordics 2.2M."
+      }
+    ],
+    "gold": [
+      "jupyter-notebook"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-132",
+    "kind": "followup",
+    "text": "top, doe de andere twee ook",
+    "recent": [
+      {
+        "role": "user",
+        "text": "transcribe interview1.m4a locally, it's in Dutch"
+      },
+      {
+        "role": "assistant",
+        "text": "Done. Transcript saved to interview1.txt (42 min, Dutch)."
+      }
+    ],
+    "gold": [
+      "whisper"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-133",
+    "kind": "followup",
+    "text": "drop the ones without a balcony and rerank by commute to Blaak",
+    "recent": [
+      {
+        "role": "user",
+        "text": "find 2-bed rentals in Rotterdam under 1800"
+      },
+      {
+        "role": "assistant",
+        "text": "Here are 6 options as listing cards, sorted by price."
+      }
+    ],
+    "gold": [
+      "property-listings"
+    ],
+    "acceptable": [
+      "maps"
+    ]
+  },
+  {
+    "id": "sr-134",
+    "kind": "followup",
+    "text": "now share that folder with mira@kestrel-legal.example, view only",
+    "recent": [
+      {
+        "role": "user",
+        "text": "upload the signed contracts to our Box under Legal/2026"
+      },
+      {
+        "role": "assistant",
+        "text": "Uploaded 4 files to Legal/2026."
+      }
+    ],
+    "gold": [
+      "box"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-135",
+    "kind": "followup",
+    "text": "slower pls, and add a counter for the comparisons",
+    "recent": [
+      {
+        "role": "user",
+        "text": "make an animation showing how bubble sort works"
+      },
+      {
+        "role": "assistant",
+        "text": "Rendered bubble_sort.mp4 (38 s, 1080p) from the scene in bubble_sort.py."
+      }
+    ],
+    "gold": [
+      "manim-video"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-136",
+    "kind": "followup",
+    "text": "add the redis queue between the api and the worker, and a separate box for the cron runner",
+    "recent": [
+      {
+        "role": "user",
+        "text": "architecture diagram of our stack: nextjs on vercel, fastapi on fly, postgres on neon"
+      },
+      {
+        "role": "assistant",
+        "text": "Saved stack-architecture.html with 5 components and their connections."
+      }
+    ],
+    "gold": [
+      "architecture-diagram"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-137",
+    "kind": "followup",
+    "text": "and one for the car APK, same day",
+    "recent": [
+      {
+        "role": "user",
+        "text": "add renew insurance to my reminders for friday"
+      },
+      {
+        "role": "assistant",
+        "text": "Added 'Renew insurance' to Reminders, due Friday 09:00."
+      }
+    ],
+    "gold": [
+      "apple-reminders"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-138",
+    "kind": "followup",
+    "text": "push it up, private repo under our org",
+    "recent": [
+      {
+        "role": "user",
+        "text": "fine-tune llama 3.1 8b with unsloth on tickets.jsonl"
+      },
+      {
+        "role": "assistant",
+        "text": "Training finished. LoRA adapter saved to out/lora-tickets (final loss 0.81)."
+      }
+    ],
+    "gold": [
+      "huggingface-hub"
+    ],
+    "acceptable": [
+      "unsloth"
+    ]
+  },
+  {
+    "id": "sr-139",
+    "kind": "followup",
+    "text": "and a 4 day split to go with it",
+    "recent": [
+      {
+        "role": "user",
+        "text": "what should my macros be for a cut, 82kg, training 4x a week"
+      },
+      {
+        "role": "assistant",
+        "text": "Roughly 2,250 kcal: 165 g protein, 70 g fat, 240 g carbs."
+      }
+    ],
+    "gold": [
+      "fitness-nutrition"
+    ],
+    "acceptable": []
+  },
+  {
+    "id": "sr-140",
+    "kind": "followup",
+    "text": "do the same for my mom, Ria",
+    "recent": [
+      {
+        "role": "user",
+        "text": "my address shows up on whitepages and spokeo, get me off those sites"
+      },
+      {
+        "role": "assistant",
+        "text": "Submitted opt-outs on 9 broker sites. Two need an ID upload from you; I've listed them below."
+      }
+    ],
+    "gold": [
+      "unbroker"
+    ],
+    "acceptable": []
+  }
+]

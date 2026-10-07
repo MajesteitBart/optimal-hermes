@@ -1,0 +1,685 @@
+[
+  {
+    "id": "mc-001",
+    "target": "user",
+    "content": "User is a product manager at Tidewater Freight, a logistics startup in Rotterdam.",
+    "user_message": "I'm the PM at Tidewater Freight (logistics, Rotterdam) and I need to turn these interview notes into a one-pager.",
+    "existing": [],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-002",
+    "target": "user",
+    "content": "User's co-founder is Femke Aalders; she owns sales and fundraising.",
+    "user_message": "Femke (my co-founder, she does sales and fundraising) wants the deck by Thursday, can you tighten slide 4?",
+    "existing": [
+      "User runs a two-person B2B SaaS startup called Lumora."
+    ],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-003",
+    "target": "user",
+    "content": "User is preparing for the CFA Level II exam in May 2027.",
+    "user_message": "I'm sitting CFA level 2 in May next year, so explain this like I'll be tested on it: what's the difference between FCFF and FCFE?",
+    "existing": [],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-004",
+    "target": "user",
+    "content": "User is based in Ghent, Belgium (Europe/Brussels time zone).",
+    "user_message": "schedule it for 9am my time, I'm in Ghent",
+    "existing": [
+      "User prefers short answers."
+    ],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-005",
+    "target": "user",
+    "content": "User has two kids (8 and 11) and school pickup makes 15:00-17:00 on weekdays unavailable.",
+    "user_message": "Can we move the sync? 15-17 is school pickup chaos with my two (8 and 11), that's every weekday really.",
+    "existing": [],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-006",
+    "target": "user",
+    "content": "User is vegetarian.",
+    "user_message": "Plan a 3-day food itinerary for Lisbon, I'm vegetarian btw",
+    "existing": [
+      "User travels to Lisbon for work roughly every quarter."
+    ],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-007",
+    "target": "user",
+    "content": "User manages a team of 6 engineers since the October 2026 reorg, including two who came from the mobile team.",
+    "user_message": "After the reorg I have 6 people now, two came over from the mobile team. Help me plan the first round of 1:1s.",
+    "existing": [
+      "User leads a team of 4 backend engineers.",
+      "User works at Northwind."
+    ],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-008",
+    "target": "user",
+    "content": "User is writing a book on supply-chain resilience for Hollis Press; the manuscript is due March 2027.",
+    "user_message": "This is for chapter 7 of my book (Hollis Press, due March '27). Does this argument hold up?",
+    "existing": [],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-009",
+    "target": "user",
+    "content": "User's name is spelled Maaike, not Maike.",
+    "user_message": "it's Maaike with two a's, you keep getting it wrong",
+    "existing": [
+      "User's name is Maike.",
+      "User works in marketing at Lumora."
+    ],
+    "label": "keep",
+    "kind": "durable_fact"
+  },
+  {
+    "id": "mc-010",
+    "target": "user",
+    "content": "Work for Brightwater Insurance must stay in the Brightwater workspace; never copy it elsewhere.",
+    "user_message": "Careful, anything for Brightwater stays in their workspace, that's in my contract with them.",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-011",
+    "target": "user",
+    "content": "User is dyslexic; prefers short paragraphs with key terms in bold.",
+    "user_message": "fyi I'm dyslexic, walls of text are hard for me. shorter paragraphs please",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-012",
+    "target": "user",
+    "content": "User prefers Dutch for casual conversation and English for code and technical docs.",
+    "user_message": "you can just talk Dutch to me for the normal stuff, keep code and docs in English",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-013",
+    "target": "user",
+    "content": "User wants prose answers by default; use bullet lists only when asked.",
+    "user_message": "stop putting everything in bullets. write normal paragraphs unless I ask for a list",
+    "existing": [
+      "User prefers concise answers."
+    ],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-014",
+    "target": "user",
+    "content": "User prefers metric units and 24-hour time.",
+    "user_message": "use km and 24h time pls, I'm not american lol",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-015",
+    "target": "user",
+    "content": "User wants commit messages in Conventional Commits format with no emoji.",
+    "user_message": "from now on commit messages: conventional commits, no emoji, ever",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-016",
+    "target": "user",
+    "content": "User wants a cost estimate before the assistant starts any cloud resource that costs more than 20 euro.",
+    "user_message": "Before you spin up anything that costs more than like 20 euro, tell me the estimate first. Always.",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-017",
+    "target": "user",
+    "content": "User does not want test suggestions for throwaway scripts.",
+    "user_message": "this is a one-off script, and in general don't bother me with test suggestions for throwaway stuff",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-018",
+    "target": "user",
+    "content": "User wants British English spelling in all documents because clients expect it.",
+    "user_message": "can you redo this with British spelling? that's what our clients expect, so use it for all docs",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-019",
+    "target": "user",
+    "content": "User wants dates written like '7 Oct 2026', never in slash format.",
+    "user_message": "please write dates like '7 Oct 2026', the slash format confuses half my team",
+    "existing": [],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-020",
+    "target": "user",
+    "content": "User wants the assistant to push back on weak reasoning instead of agreeing.",
+    "user_message": "don't just agree with me. if my reasoning is weak, say so, that's what I want from you",
+    "existing": [
+      "User likes direct feedback on writing."
+    ],
+    "label": "keep",
+    "kind": "preference"
+  },
+  {
+    "id": "mc-021",
+    "target": "memory",
+    "content": "In the user's repos, use pnpm; npm breaks their lockfiles.",
+    "user_message": "use pnpm not npm, npm messes up the lockfile in all my repos",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-022",
+    "target": "memory",
+    "content": "User's home server is a Proxmox host named 'atlas' at 10.0.20.5, reachable over Tailscale.",
+    "user_message": "the homelab box is atlas (10.0.20.5), it's on tailscale so you can ssh to it from here",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-023",
+    "target": "memory",
+    "content": "Production Postgres is on Neon; staging is a local Docker container on port 5433.",
+    "user_message": "prod db is neon, staging is just docker on 5433, don't mix them up",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-024",
+    "target": "memory",
+    "content": "User's work laptop runs Windows 11 with Git Bash; avoid macOS-only commands there.",
+    "user_message": "I'm on windows at work (git bash), so no pbcopy stuff",
+    "existing": [
+      "User's personal machine is a MacBook Air M3."
+    ],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-025",
+    "target": "memory",
+    "content": "The finance@lumora.example mailbox is read-only for the assistant; never send mail from it.",
+    "user_message": "you have access to the finance mailbox but it's read only for you. never send from it",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-026",
+    "target": "memory",
+    "content": "User's Obsidian vault is at D:/Vault; daily notes live in Journal/ named YYYY-MM-DD.md.",
+    "user_message": "my vault's on D:/Vault, daily notes go in Journal/ as 2026-10-07.md style",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-027",
+    "target": "memory",
+    "content": "CI for northwind/api runs on a self-hosted runner without internet access.",
+    "user_message": "heads up, the api repo CI runs on our own runner without internet, so no downloading stuff in tests",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-028",
+    "target": "memory",
+    "content": "The deploy-staging GitHub Action needs the input DEPLOY_ENV=staging since September 2026; without it, it deploys to prod.",
+    "user_message": "fyi since september you also have to pass DEPLOY_ENV=staging to that action or it deploys to prod",
+    "existing": [
+      "Staging deploys use the deploy-staging GitHub Action."
+    ],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-029",
+    "target": "memory",
+    "content": "The bedroom is called 'Slaapkamer' in the user's Hue setup.",
+    "user_message": "the bedroom is called Slaapkamer in the hue app, not Bedroom",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-030",
+    "target": "memory",
+    "content": "Hosts under corp.tidewater.io are only reachable with the company VPN connected.",
+    "user_message": "that 404 is because you need the vpn for anything on corp.tidewater, it's always like that",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-031",
+    "target": "memory",
+    "content": "Tidewater CSV exports are cp1252-encoded and semicolon-separated.",
+    "user_message": "ah so that's why pandas choked. yeah all our exports come out like that, every time",
+    "existing": [],
+    "label": "keep",
+    "kind": "environment"
+  },
+  {
+    "id": "mc-032",
+    "target": "user",
+    "content": "User's usual coffee order is a flat white with oat milk.",
+    "user_message": "remember that my usual is a flat white with oat milk, so you can order for me next time",
+    "existing": [],
+    "label": "keep",
+    "kind": "requested"
+  },
+  {
+    "id": "mc-033",
+    "target": "user",
+    "content": "User's dog is called Biscuit.",
+    "user_message": "lol remember my dog's name is Biscuit",
+    "existing": [],
+    "label": "keep",
+    "kind": "requested"
+  },
+  {
+    "id": "mc-034",
+    "target": "memory",
+    "content": "Restarting the media stack: ssh atlas, cd /opt/media, docker compose pull, docker compose up -d.",
+    "user_message": "please remember these steps for restarting the media stack, I always forget them: ssh atlas, cd /opt/media, pull, up -d",
+    "existing": [],
+    "label": "keep",
+    "kind": "requested"
+  },
+  {
+    "id": "mc-035",
+    "target": "user",
+    "content": "User finished chapter 3 of the manuscript on 6 Oct 2026.",
+    "user_message": "note somewhere that I finished chapter 3 today, I want to keep track of this",
+    "existing": [
+      "User is writing a book on supply-chain resilience for Hollis Press; the manuscript is due March 2027."
+    ],
+    "label": "keep",
+    "kind": "requested"
+  },
+  {
+    "id": "mc-036",
+    "target": "user",
+    "content": "User's office parking spot is P2-41.",
+    "user_message": "save this: my parking spot at the office is P2-41",
+    "existing": [],
+    "label": "keep",
+    "kind": "requested"
+  },
+  {
+    "id": "mc-037",
+    "target": "memory",
+    "content": "Ran the migration on staging; 3 of 12 tables still need backfilling.",
+    "user_message": "ok the staging migration went through, what's left?",
+    "existing": [],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-038",
+    "target": "user",
+    "content": "User is currently debugging a flaky test in test_checkout.py.",
+    "user_message": "this test_checkout thing fails randomly again, can you look",
+    "existing": [
+      "User is a backend engineer at Northwind."
+    ],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-039",
+    "target": "memory",
+    "content": "PR #91 was opened and CI is running.",
+    "user_message": "open the PR",
+    "existing": [],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-040",
+    "target": "memory",
+    "content": "The Q3 report draft is about 70% done; the charts section is still missing.",
+    "user_message": "where are we with the q3 report?",
+    "existing": [],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-041",
+    "target": "user",
+    "content": "User asked for a summary of the Hollis Press contract today.",
+    "user_message": "summarize the contract",
+    "existing": [
+      "User is writing a book on supply-chain resilience for Hollis Press; the manuscript is due March 2027."
+    ],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-042",
+    "target": "memory",
+    "content": "Downloaded 14 September invoices from Gmail into ~/invoices/2026-09 for the tax filing.",
+    "user_message": "grab all the september invoices from gmail",
+    "existing": [],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-043",
+    "target": "user",
+    "content": "User is waiting for Femke's feedback on the deck before sending it.",
+    "user_message": "hold off on sending, Femke still has to look at it",
+    "existing": [
+      "User's co-founder is Femke Aalders; she owns sales and fundraising."
+    ],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-044",
+    "target": "user",
+    "content": "User is taking the train to Utrecht today.",
+    "user_message": "remember my dog's name is Biscuit. also can you check the train times to Utrecht for this afternoon?",
+    "existing": [
+      "User's dog is called Biscuit."
+    ],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-045",
+    "target": "user",
+    "content": "User wants the PR closed after merging.",
+    "user_message": "remember to close the PR when you're done merging",
+    "existing": [],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-046",
+    "target": "user",
+    "content": "User is staying in a Lisbon hotel with bad Wi-Fi this week.",
+    "user_message": "keep replies short, the hotel wifi in Lisbon is awful this week",
+    "existing": [],
+    "label": "reject",
+    "kind": "task_state"
+  },
+  {
+    "id": "mc-047",
+    "target": "memory",
+    "content": "To regenerate the API client: run pnpm openapi:gen, then pnpm lint --fix, then commit the generated folder separately.",
+    "user_message": "regenerate the api client",
+    "existing": [],
+    "label": "reject",
+    "kind": "procedure"
+  },
+  {
+    "id": "mc-048",
+    "target": "memory",
+    "content": "Fix for Docker DNS failures: add \"dns\": [\"1.1.1.1\"] to /etc/docker/daemon.json, restart Docker, re-run compose.",
+    "user_message": "that fixed it, thanks",
+    "existing": [],
+    "label": "reject",
+    "kind": "procedure"
+  },
+  {
+    "id": "mc-049",
+    "target": "memory",
+    "content": "Rotating the Stripe webhook secret: create a new endpoint secret in the dashboard, update the env var, redeploy, delete the old secret after 24h.",
+    "user_message": "ok rotated, nice",
+    "existing": [],
+    "label": "reject",
+    "kind": "procedure"
+  },
+  {
+    "id": "mc-050",
+    "target": "memory",
+    "content": "Release checklist: bump the version, update CHANGELOG, tag vX.Y.Z, push tags, wait for the release workflow, announce in #releases.",
+    "user_message": "ship 2.3.0",
+    "existing": [],
+    "label": "reject",
+    "kind": "procedure"
+  },
+  {
+    "id": "mc-051",
+    "target": "memory",
+    "content": "Exporting Notion pages to markdown: run the ntn export command with --format md, then rewrite the image links.",
+    "user_message": "export the docs space",
+    "existing": [],
+    "label": "reject",
+    "kind": "procedure"
+  },
+  {
+    "id": "mc-052",
+    "target": "memory",
+    "content": "For slow queries: run EXPLAIN ANALYZE, look for sequential scans, add an index, re-run and compare timings.",
+    "user_message": "query is fast now",
+    "existing": [],
+    "label": "reject",
+    "kind": "procedure"
+  },
+  {
+    "id": "mc-053",
+    "target": "memory",
+    "content": "New Hermes profile setup: hermes profile create <name>, copy the .env, run hermes setup, test with hermes chat -q hello.",
+    "user_message": "the new profile works",
+    "existing": [],
+    "label": "reject",
+    "kind": "procedure"
+  },
+  {
+    "id": "mc-054",
+    "target": "user",
+    "content": "For a weekly review, first pull calendar events, then open tasks, then notes, then build the plan for next week.",
+    "user_message": "run my weekly review",
+    "existing": [],
+    "label": "reject",
+    "kind": "procedure"
+  },
+  {
+    "id": "mc-055",
+    "target": "user",
+    "content": "User prefers short answers.",
+    "user_message": "too long, shorter",
+    "existing": [
+      "User prefers concise answers.",
+      "User works in Rotterdam."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-056",
+    "target": "memory",
+    "content": "Production database is hosted on Neon.",
+    "user_message": "check the prod db size",
+    "existing": [
+      "Production Postgres is on Neon; staging is a local Docker container on port 5433."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-057",
+    "target": "user",
+    "content": "User is a PM at Tidewater Freight.",
+    "user_message": "as a PM I need this simpler",
+    "existing": [
+      "User is a product manager at Tidewater Freight, a logistics startup in Rotterdam.",
+      "User prefers metric units and 24-hour time."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-058",
+    "target": "user",
+    "content": "User doesn't like bullet points.",
+    "user_message": "again with the bullets...",
+    "existing": [
+      "User wants prose answers by default; use bullet lists only when asked."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-059",
+    "target": "memory",
+    "content": "Use pnpm instead of npm in the user's projects.",
+    "user_message": "pnpm please",
+    "existing": [
+      "In the user's repos, use pnpm; npm breaks their lockfiles."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-060",
+    "target": "user",
+    "content": "User lives in Ghent.",
+    "user_message": "what's on in ghent this weekend?",
+    "existing": [
+      "User is based in Ghent, Belgium (Europe/Brussels time zone)."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-061",
+    "target": "memory",
+    "content": "Atlas (10.0.20.5) is the user's Proxmox home server and is reachable over Tailscale.",
+    "user_message": "ssh into atlas and check the disk",
+    "existing": [
+      "User's home server is a Proxmox host named 'atlas' at 10.0.20.5, reachable over Tailscale.",
+      "Production Postgres is on Neon; staging is a local Docker container on port 5433."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-062",
+    "target": "user",
+    "content": "User is vegetarian and doesn't eat meat.",
+    "user_message": "any good restaurants near the office?",
+    "existing": [
+      "User is vegetarian.",
+      "User travels to Lisbon for work roughly every quarter."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-063",
+    "target": "user",
+    "content": "User's co-founder Femke handles sales.",
+    "user_message": "Femke wants the pipeline numbers",
+    "existing": [
+      "User's co-founder is Femke Aalders; she owns sales and fundraising.",
+      "User runs a two-person B2B SaaS startup called Lumora."
+    ],
+    "label": "reject",
+    "kind": "duplicate"
+  },
+  {
+    "id": "mc-064",
+    "target": "user",
+    "content": "User said the weather in Utrecht was nice today.",
+    "user_message": "gorgeous day in utrecht btw. anyway, can you fix this regex",
+    "existing": [],
+    "label": "reject",
+    "kind": "trivia"
+  },
+  {
+    "id": "mc-065",
+    "target": "user",
+    "content": "User had pasta for lunch.",
+    "user_message": "back from lunch (pasta, way too much). where were we?",
+    "existing": [],
+    "label": "reject",
+    "kind": "trivia"
+  },
+  {
+    "id": "mc-066",
+    "target": "memory",
+    "content": "The capital of Australia is Canberra.",
+    "user_message": "capital of australia?",
+    "existing": [],
+    "label": "reject",
+    "kind": "trivia"
+  },
+  {
+    "id": "mc-067",
+    "target": "user",
+    "content": "User thought the new superhero movie was boring.",
+    "user_message": "saw the new superhero thing last night, so boring. ok, back to the slides",
+    "existing": [],
+    "label": "reject",
+    "kind": "trivia"
+  },
+  {
+    "id": "mc-068",
+    "target": "memory",
+    "content": "Python's list.sort() is stable.",
+    "user_message": "is sort stable in python",
+    "existing": [],
+    "label": "reject",
+    "kind": "trivia"
+  },
+  {
+    "id": "mc-069",
+    "target": "user",
+    "content": "User was in a good mood this morning.",
+    "user_message": "good morning!! feeling great today, let's get through the backlog",
+    "existing": [],
+    "label": "reject",
+    "kind": "trivia"
+  },
+  {
+    "id": "mc-070",
+    "target": "user",
+    "content": "User's laptop battery was at 12% during the session.",
+    "user_message": "quick, I'm at 12% battery",
+    "existing": [],
+    "label": "reject",
+    "kind": "trivia"
+  }
+]
