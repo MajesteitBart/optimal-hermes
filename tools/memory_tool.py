@@ -213,16 +213,17 @@ def _background_delete_gate(store, action, operations, target="memory", content=
 
 def memory_tool(action: str = None, target: str = "memory", content: str = None, old_text: str = None,
                 new_text: str = None, operations: Optional[List[Dict[str, Any]]] = None,
-                store: Optional[MemoryStore] = None) -> str:
+                store: Optional[MemoryStore] = None, write_gate: Any = None) -> str:
     """Tool entry point; returns a JSON string. Single op (action + content/old_text)
     or batch (``operations``, atomic against the final budget). ``new_text``
     aliases ``content`` -- for 'replace' both mean the COMPLETE new entry (the
-    whole matched entry is overwritten; old_text only locates it)."""
+    whole matched entry is overwritten; old_text only locates it). ``write_gate``
+    (``agent.relevance_memory.MemoryWriteGate``) judges add/replace content first."""
     if store is None:
         return tool_error("Memory is not available. It may be disabled in config or this environment.", success=False)
     token = FAILURE_CLASS.set("other")
     try:
-        outcome, result = _memory_tool(action, target, content, old_text, new_text, operations, store)
+        outcome, result = _memory_tool(action, target, content, old_text, new_text, operations, store, write_gate)
         failure_class = "none" if outcome == "success" else FAILURE_CLASS.get()
     finally:
         FAILURE_CLASS.reset(token)
@@ -231,8 +232,25 @@ def memory_tool(action: str = None, target: str = "memory", content: str = None,
     return result
 
 
-def _applied(result: Dict[str, Any]) -> Tuple[str, str]:
+def _applied(result: Dict[str, Any], write_gate: Any = None) -> Tuple[str, str]:
+    if result.get("success") and getattr(write_gate, "note", ""):
+        result = {**result, "relevance_note": write_gate.note}
     return ("success" if result.get("success") else "failed"), json.dumps(result, ensure_ascii=False)
+
+
+def _refusal_outcome(write_gate: Any) -> str:
+    """``failed`` when the refusal is the store's own (the gate's dry run hit it), as without the gate."""
+    return "failed" if getattr(write_gate, "deferred_to_store", False) else "rejected"
+
+
+def _relevance_gate(write_gate: Any, store, action, target, content, old_text, operations=None) -> Optional[str]:
+    """``memory.write_gate``: refusal JSON for a low-value add/replace, else None (fails open)."""
+    if write_gate is None:
+        return None
+    refusal = write_gate.check(store, action, target, content, old_text, operations)
+    if refusal is not None and not write_gate.deferred_to_store:  # the store set its own failure class
+        FAILURE_CLASS.set("gate_refused")
+    return refusal
 
 
 def _invalid(message: str) -> Tuple[str, str]:
@@ -240,7 +258,7 @@ def _invalid(message: str) -> Tuple[str, str]:
     return "rejected", tool_error(message, success=False)
 
 
-def _memory_tool(action, target, content, old_text, new_text, operations, store) -> Tuple[str, str]:
+def _memory_tool(action, target, content, old_text, new_text, operations, store, write_gate=None) -> Tuple[str, str]:
     """``(outcome, result_json)``: ``rejected`` when refused or held before touching the store."""
     # An omitted optional string can arrive as "" (#90468): let the new_text alias fill it.
     if not content and new_text:
@@ -253,14 +271,15 @@ def _memory_tool(action, target, content, old_text, new_text, operations, store)
     if operations:
         if not isinstance(operations, list):
             return _invalid("operations must be a list of {action, content?, old_text?} objects.")
-        denied = _background_delete_gate(store, action, operations, target)
+        denied = (_background_delete_gate(store, action, operations, target)
+                  or _relevance_gate(write_gate, store, None, target, None, None, operations))
         if denied is not None:
-            return "rejected", denied
+            return _refusal_outcome(write_gate), denied
         # Approval gate: stages (background/gateway) or prompts inline (CLI); off by default.
         gate_result = _apply_write_gate(store, "batch", target, None, None, operations)
         if gate_result is not None:
             return "rejected", gate_result
-        return _applied(store.apply_batch(target, operations))
+        return _applied(store.apply_batch(target, operations), write_gate)
     # Reject calls that provide neither action (single-op) nor operations
     # (batch).  Without this guard the dispatch falls through to the generic
     # "Unknown action 'None'" error, which gives the model no signal about
@@ -274,10 +293,11 @@ def _memory_tool(action, target, content, old_text, new_text, operations, store)
         return _invalid(f"Unknown action '{action}'. Use: add, replace, remove")
     invalid = (_validate_single_op(store, action, target, content, old_text)
                or _background_delete_gate(store, action, None, target, content, old_text)
+               or _relevance_gate(write_gate, store, action, target, content, old_text)
                or _apply_write_gate(store, action, target, content, old_text))
     if invalid is not None:
-        return "rejected", invalid
-    return _applied(_STORE_ACTIONS[action][0](store, target, content, old_text))
+        return _refusal_outcome(write_gate), invalid
+    return _applied(_STORE_ACTIONS[action][0](store, target, content, old_text), write_gate)
 
 
 def get_builtin_memory_config(config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

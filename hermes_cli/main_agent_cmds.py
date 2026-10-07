@@ -63,6 +63,9 @@ def cmd_memory(args):
         _cmd_memory_off()
     elif sub == "reset":
         _cmd_memory_reset(args)
+    elif sub == "audit":
+        from hermes_cli.memory_audit import cmd_memory_audit
+        return cmd_memory_audit(args)
     else:
         from hermes_cli.memory_setup import memory_command
         memory_command(args)
@@ -169,18 +172,40 @@ def cmd_monitoring(args):
     sys.exit(2)
 
 
-def cmd_skills(args):
+def _cmd_skills_config(args):
     from hermes_cli.main import _require_tty
-    action = getattr(args, "skills_action", None)
-    if action == "config":
-        _require_tty("skills config")
-        from hermes_cli.skills_config import skills_command as skills_config_command
-        skills_config_command(args)
-    elif action in ("trust", "untrust"):
-        _cmd_skills_trust(args)
-    else:
-        from hermes_cli.skills_hub import skills_command
-        return skills_command(args)
+    _require_tty("skills config")
+    from hermes_cli.skills_config import skills_command as skills_config_command
+    skills_config_command(args)
+
+
+def _cmd_skills_select(args):
+    from hermes_cli.skills_select import cmd_skills_select
+    return cmd_skills_select(args)
+
+
+def _cmd_skills_overlap(args):
+    from hermes_cli.skills_overlap import cmd_skills_overlap
+    return cmd_skills_overlap(args)
+
+
+def _cmd_skills_hub(args):
+    from hermes_cli.skills_hub import skills_command
+    return skills_command(args)
+
+
+# skills_action -> handler; everything else is a hub action (skills_hub._CLI_ACTIONS).
+_SKILLS_ACTIONS = {
+    "config": _cmd_skills_config,
+    "trust": lambda args: _cmd_skills_trust(args),
+    "untrust": lambda args: _cmd_skills_trust(args),
+    "select": _cmd_skills_select,
+    "overlap": _cmd_skills_overlap,
+}
+
+
+def cmd_skills(args):
+    return _SKILLS_ACTIONS.get(getattr(args, "skills_action", None), _cmd_skills_hub)(args)
 
 
 def _cmd_skills_trust(args):

@@ -760,6 +760,10 @@ def finalize_turn(
     if _should_review_skills:
         agent._iters_since_skill = 0
 
+    # skills.selection.track_outcomes: did the reply use the attached skills? (background, ledger only)
+    from agent.relevance_skills import track_turn_outcomes
+    track_turn_outcomes(agent, original_user_message, final_response, interrupted=interrupted)
+
     # External memory provider: sync the completed turn + queue next prefetch.
     agent._sync_external_memory_for_turn(
         original_user_message=original_user_message, final_response=final_response,

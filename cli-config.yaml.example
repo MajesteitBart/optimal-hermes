@@ -1006,6 +1006,28 @@ memory:
   # every N user turns. Set to 0 to disable. Only active when memory is enabled.
   nudge_interval: 10        # Nudge every 10 user turns (0 = disabled)
 
+  # Relevance gates, scored by TypeSafe's Jev model (needs TYPESAFE_API_KEY, see
+  # `relevance` below). Each sends text to api.typesafe.ai, so each is off by
+  # default. All fail open: when scoring is unavailable, memory works as before.
+  # write_gate: "off"         # off | advise | enforce: judge each memory add/replace
+  # review_gate: false        # skip the background memory review when nothing durable happened
+  # review_events: false      # run the review early when the user reveals something lasting
+  # recall_filter: false      # pass only relevant recalled items (external providers) into the chat
+  # search_rerank: false      # session_search returns the most relevant past sessions
+
+# =============================================================================
+# Relevance Scoring (TypeSafe System One)
+# =============================================================================
+# Backend for skills.selection and the memory gates. Decisions are logged
+# without message text to <home>/logs/relevance.jsonl (`hermes relevance report`).
+#
+# relevance:
+#   model: "jev-1.13.0"       # pinned: thresholds are tuned against a model version
+#   timeout_seconds: 8
+#   max_retries: 2
+#   turn_budget_seconds: 4    # past this, an in-turn decision fails open
+#   ledger: true
+
 # =============================================================================
 # Session Continuity (Messaging Platforms)
 # =============================================================================
@@ -1154,6 +1176,17 @@ skills:
   # external_dirs:
   #   - ~/.agents/skills
   #   - /home/shared/team-skills
+
+  # Per-message skill selection (needs TYPESAFE_API_KEY). Every skill is scored
+  # 0-9 against the message; the best are attached in full, highest first, while
+  # score >= min_score, until the scores sum to target_score, within token_budget.
+  # Try a task first with: hermes skills select "<task>"
+  # selection:
+  #   enabled: false
+  #   min_score: 6.5
+  #   target_score: 18
+  #   token_budget: 6000
+  #   index: names            # names | full | none: system-prompt skill index
 
 # =============================================================================
 # Agent Behavior

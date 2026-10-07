@@ -1351,9 +1351,21 @@ def spawn_background_review_thread(
         )
 
     def _target() -> None:  # resolves _run_review_in_thread at call time (tests patch it)
+        run_memory, run_prompt = review_memory, prompt
+        # memory.review_gate: an automatic review whose recent turns hold nothing durable skips its
+        # memory half (checked here, on the review thread, so the user's turn never waits on it).
+        if review_memory and not focus and not explicit:
+            from agent.relevance_memory import gate_memory_review
+
+            if not gate_memory_review(agent, messages_snapshot):
+                if not review_skills:
+                    finish_background_review_run(agent, review_run)
+                    return
+                run_memory = False
+                run_prompt = getattr(agent, "_SKILL_REVIEW_PROMPT", _SKILL_REVIEW_PROMPT)
         _run_review_in_thread(
-            agent, messages_snapshot, prompt, task_cfg=task_cfg, review_run=review_run,
-            review_memory=review_memory, explicit=explicit)
+            agent, messages_snapshot, run_prompt, task_cfg=task_cfg, review_run=review_run,
+            review_memory=run_memory, explicit=explicit)
 
     return _target, prompt
 

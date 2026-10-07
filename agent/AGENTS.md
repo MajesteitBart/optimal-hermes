@@ -139,6 +139,14 @@ providers intentionally do not run during cron.
   `os.getenv` fallthrough. Delegated children carry `delegation_context.py::
   DELEGATED_CHILD_ENV_MARKER` valued as the fenced Kanban board root, not a bare flag.
 
+## Relevance scoring (`agent/relevance*.py`)
+
+Opt-in Jev (TypeSafe) gates: `relevance_skills` (per-message skill selection), `relevance_memory`
+(write/review gates, recall filter, `session_search` rerank), `relevance_skill_overlap`,
+`relevance_ledger`; the HTTP client is `relevance_typesafe`. Selected skills ride the user
+message's `api_content` (never the system prompt); every gate fails open to the behaviour without
+it. Thresholds come from `evals/context_relevance/`: re-run it before changing one.
+
 ## Tests
 
 Loop/phase tests go in `tests/agent/`; patch the binding the phase actually reads (siblings often

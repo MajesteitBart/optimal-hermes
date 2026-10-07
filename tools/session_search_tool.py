@@ -384,6 +384,10 @@ def _discover(db, query: str, role_filter: Optional[List[str]], limit: int, sort
             "phrases, exclude with NOT, or prefix-match with `deploy*`."))
     seen_sessions: Dict[str, Dict[str, Any]] = {}
     results = [title_result] if title_result else []
+    # memory.search_rerank: gather deeper, let Jev judge each match against the query, keep the best.
+    from agent.relevance_memory import SEARCH_RERANK_DEPTH, search_rerank_enabled
+    rerank = search_rerank_enabled()
+    depth = max(limit, min(limit * 3, SEARCH_RERANK_DEPTH)) if rerank else limit
     if title_result and (title_lineage := title_result.pop("_lineage_root", None)):
         seen_sessions[title_lineage] = {"_title_only": True}
     # Dedupe by lineage (lineage_root -> first surviving FTS row) up to `limit`. The raw
@@ -392,7 +396,7 @@ def _discover(db, query: str, role_filter: Optional[List[str]], limit: int, sort
     # (compression-ended, /new-reset predecessor, or an in-place compacted row on the
     # SAME session); a live delegation child (end_reason=None) stays excluded.
     for r in raw_results:
-        if len(seen_sessions) >= limit:
+        if len(seen_sessions) >= depth:
             break
         raw_sid, resolved_sid = r["session_id"], _resolve_lineage(db, r["session_id"])
         if raw_sid in excluded_roots or resolved_sid in excluded_roots:
@@ -414,6 +418,8 @@ def _discover(db, query: str, role_filter: Optional[List[str]], limit: int, sort
         if current_session_id and raw_sid == current_session_id and not is_compacted_hit:
             continue
         seen_sessions.setdefault(resolved_sid, {**r, "_lineage_root": resolved_sid})
+    if len(seen_sessions) > limit:
+        seen_sessions = _keep_most_relevant(query, seen_sessions, limit)
     for lineage_root, match_info in seen_sessions.items():
         if match_info.get("_title_only"):
             continue
@@ -429,6 +435,18 @@ def _discover(db, query: str, role_filter: Optional[List[str]], limit: int, sort
         "as markdown, in backticks, on its own line, or next to the "
         "title/id/date. To read more around a compact result, scroll: "
         "session_search(session_id=..., around_message_id=match_message_id)."))
+
+
+def _keep_most_relevant(query: str, seen: Dict[str, Dict[str, Any]], limit: int) -> Dict[str, Dict[str, Any]]:
+    """Trim the deeper rerank scan back to ``limit`` lineages, most relevant first (a title match keeps
+    its slot); full-text order when scoring is unavailable."""
+    from agent.relevance_memory import rerank_order
+
+    keys = [k for k, v in seen.items() if not v.get("_title_only")]
+    fixed = [k for k, v in seen.items() if v.get("_title_only")]
+    order = rerank_order(query, [str(seen[k].get("snippet") or "") for k in keys])
+    ranked = [keys[i] for i in order] if order is not None else keys
+    return {k: seen[k] for k in fixed + ranked[: max(0, limit - len(fixed))]}
 
 
 def _resolve_profile_db(profile: str):
