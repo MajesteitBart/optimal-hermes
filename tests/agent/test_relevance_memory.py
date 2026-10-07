@@ -541,3 +541,43 @@ class TestReviewRegressionsRound8:
         assert verdict.run is True
         conversation = fake_systemone.requests[0]["state"]["conversation"]
         assert conversation[0] == {"role": "user", "text": "set up the gateway"}
+
+
+def _in_background_review(fn):
+    from tools.skill_provenance import BACKGROUND_REVIEW, _write_origin, set_current_write_origin
+
+    token = set_current_write_origin(BACKGROUND_REVIEW)
+    try:
+        return fn()
+    finally:
+        _write_origin.reset(token)
+
+
+class TestReviewRegressionsRound10:
+    """Regressions from the PR review (round 10)."""
+
+    def test_a_background_review_sees_earlier_remember_requests(self):
+        from agent import background_review
+
+        write_config("memory:\n  write_gate: enforce\n")
+        messages = [{"role": "user", "content": "remember that my desk is 4.12"},
+                    {"role": "assistant", "content": "Noted."},
+                    {"role": "user", "content": "thanks"},
+                    {"role": "assistant", "content": "Anytime."},
+                    {"role": "user", "content": background_review._MEMORY_REVIEW_PROMPT}]
+        gate = _in_background_review(lambda: rm.build_write_gate(types.SimpleNamespace(session_id="s1"), messages))
+        assert "desk is 4.12" in gate.user_message and "thanks" in gate.user_message
+
+    def test_background_consolidations_are_judged_before_staging(self, fake_systemone):
+        fake_systemone.answer = nouls(durable=0.1, personal=0.1)  # low value
+        store = _store_with("Uses Linux.")
+        result = json.loads(_in_background_review(lambda: memory_tool(
+            "replace", "memory", "It rained today.", old_text="Uses Linux.", store=store, write_gate=_gate())))
+        assert result["success"] is False and "Not saved" in result.get("error", "")  # refused, not staged
+
+    def test_a_staged_write_keeps_the_relevance_note(self, fake_systemone):
+        fake_systemone.answer = nouls(durable=0.1, personal=0.1)
+        store = _store_with("Uses Linux.")
+        result = json.loads(_in_background_review(lambda: memory_tool(
+            "replace", "memory", "It rained today.", old_text="Uses Linux.", store=store, write_gate=_gate(mode="advise"))))
+        assert "relevance_note" in result  # approval replays the write without the gate

@@ -52,6 +52,7 @@ STORE_MISMATCH_MIN = 0.8
 REVIEW_MIN = 0.7
 REVIEW_EVENT_SUM = 1.5  # summed per-turn P(lasting) that triggers an early memory review
 REVIEW_TOOL_CHARS = 400
+REVIEW_USER_TURNS = 6  # user messages a background review's write gate checks for a remember request
 RECALL_RELEVANT_MIN = 0.3
 RECALL_PREFERENCE_MIN = 0.6
 RECALL_INJECTION_MIN = 0.8
@@ -410,25 +411,35 @@ def build_write_gate(agent: Any, messages: Optional[Sequence[Mapping[str, Any]]]
         return None
     from tools.skill_provenance import is_background_review
 
-    # In a background review fork the last user row is the review prompt ("consider saving to memory"),
-    # which would answer "did the user ask to remember this?" with yes: judge the user's real last message.
-    return MemoryWriteGate(agent, mode, _latest_user_text(messages or (), skip=1 if is_background_review() else 0))
+    if not is_background_review():
+        return MemoryWriteGate(agent, mode, next(iter(_user_texts(messages or (), limit=1)), ""))
+    # A background review covers several turns, so a remember request can sit before the latest one. Its own
+    # last user row is the review prompt ("consider saving to memory"), which would answer "did the user ask
+    # to remember this?" with yes: skip it and judge the user's real recent messages.
+    from agent.relevance_skills import _clip
+
+    texts = _user_texts(messages or (), skip=1, limit=REVIEW_USER_TURNS)
+    return MemoryWriteGate(agent, mode, "\n\n".join(_clip(t, 300) for t in reversed(texts)))
 
 
-def _latest_user_text(messages: Sequence[Mapping[str, Any]], *, skip: int = 0) -> str:
-    """The newest user message's own text, after skipping ``skip`` user rows from the end."""
+def _user_texts(messages: Sequence[Mapping[str, Any]], *, skip: int = 0, limit: int = 1) -> List[str]:
+    """The newest ``limit`` user messages' own texts, newest first, after skipping ``skip`` user rows."""
     from agent.message_content import flatten_message_text
     from agent.skill_commands import extract_user_instruction_from_skill_message
 
+    out: List[str] = []
     for msg in reversed(messages):
+        if len(out) >= limit:
+            break
         if msg.get("role") != "user":
             continue
         if skip:
             skip -= 1
             continue
-        text = flatten_message_text(msg.get("content")).strip()
-        return (extract_user_instruction_from_skill_message(text) or "").strip()
-    return ""
+        text = (extract_user_instruction_from_skill_message(flatten_message_text(msg.get("content")).strip()) or "").strip()
+        if text:
+            out.append(text)
+    return out
 
 
 # ── Review gate ─────────────────────────────────────────────────────────────

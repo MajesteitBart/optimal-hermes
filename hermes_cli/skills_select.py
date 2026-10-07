@@ -14,9 +14,6 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-_CONTEXT_MAX_CHARS = 4_000
-
-
 def _read_prompt(args: Any) -> Optional[str]:
     positional, option = getattr(args, "prompt", None), getattr(args, "prompt_opt", None)
     if positional and option:
@@ -47,9 +44,9 @@ def _read_context(path: Optional[str]) -> List[Dict[str, str]]:
             text = item.get("text", item.get("content"))
             role = str(item.get("role") or "user")
             if isinstance(text, str) and text.strip() and role in ("user", "assistant"):
-                out.append({"role": role, "text": text.strip()[:_CONTEXT_MAX_CHARS]})
+                out.append({"role": role, "text": text.strip()})  # clipped later, as the agent clips
         return out
-    return [{"role": "user", "text": raw[-_CONTEXT_MAX_CHARS:]}]
+    return [{"role": "user", "text": raw}]
 
 
 def _config_from_args(args: Any):
@@ -67,10 +64,14 @@ def _cli_visibility() -> Dict[str, Any]:
     from hermes_cli.config import load_config
     from hermes_cli.tools_config import _get_platform_tools
 
-    toolsets = sorted(_get_platform_tools(load_config(), "cli", include_default_mcp_servers=False))
+    config = load_config()
+    toolsets = sorted(_get_platform_tools(config, "cli", include_default_mcp_servers=False))
     tools = {d["function"]["name"] for d in model_tools.get_tool_definitions(enabled_toolsets=toolsets, quiet_mode=True)}
     # Derived from the tools, exactly as the agent's per-turn selection does.
     available = {model_tools.get_toolset_for_tool(t) for t in tools} - {None, ""}
+    # MCP servers' tools are only known once they connect, and the preview never starts them; their toolsets
+    # count as available, as they are for the agent once it starts.
+    available |= _get_platform_tools(config, "cli") - set(toolsets)
     return {"available_tools": tools, "available_toolsets": available, "platform": "cli"}
 
 

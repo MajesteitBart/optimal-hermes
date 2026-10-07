@@ -198,3 +198,27 @@ class TestReviewRegressionsRound8:
         # The agent sends skills.selection.recent_messages (4) earlier messages, each cut to 600 characters.
         assert [r["text"].split()[1] for r in recent] == ["6", "7", "8", "9"]
         assert all(len(r["text"]) <= 600 for r in recent)
+
+
+class TestReviewRegressionsRound10:
+    """Regressions from the PR review (round 10)."""
+
+    def test_the_preview_clips_context_like_the_agent(self, fake_systemone, capsys, tmp_path):
+        from hermes_cli.skills_select import cmd_skills_select
+
+        write_skill("pdf-tools", "Merge PDFs.")
+        context = tmp_path / "ctx.json"
+        context.write_text(json.dumps([{"role": "user", "text": "start " + "x" * 5000 + " TAILWORD"}]), encoding="utf-8")
+        assert cmd_skills_select(_args(prompt="merge", context_file=str(context), dry_run=True)) == 0
+        recent = json.loads(capsys.readouterr().out)["requests"][0]["state"]["recent_conversation"]
+        assert recent[0]["text"].endswith("TAILWORD")  # the agent's clip keeps the head and the tail
+
+    def test_the_preview_counts_enabled_mcp_servers(self, fake_systemone, capsys):
+        from hermes_cli.skills_select import cmd_skills_select
+
+        (_home() / "config.yaml").write_text("mcp_servers:\n  ticketing:\n    command: ticketing-mcp\n", encoding="utf-8")
+        write_skill("pdf-tools", "Merge PDFs.")
+        write_skill("ticket-triage", "Triage tickets.",
+                    frontmatter="metadata:\n  hermes:\n    requires_toolsets: [ticketing]\n")
+        assert cmd_skills_select(_args(prompt="triage the queue", dry_run=True)) == 0
+        assert "ticket-triage" in json.loads(capsys.readouterr().out)["skills"]

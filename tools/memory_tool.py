@@ -211,6 +211,21 @@ def _background_delete_gate(store, action, operations, target="memory", content=
             "batch); 'add' is still available.", success=False)
 
 
+def _noted(staged: Optional[str], write_gate: Any) -> Optional[str]:
+    """A staged (approval-pending) response carries the relevance gate's advice: approval replays the write
+    without the gate, so this is the only place the model can still get it."""
+    note = getattr(write_gate, "note", "") if write_gate is not None else ""
+    if staged is None or not note:
+        return staged
+    try:
+        payload = json.loads(staged)
+    except ValueError:
+        return staged
+    if not isinstance(payload, dict):
+        return staged
+    return json.dumps({**payload, "relevance_note": note}, ensure_ascii=False)
+
+
 def memory_tool(action: str = None, target: str = "memory", content: str = None, old_text: str = None,
                 new_text: str = None, operations: Optional[List[Dict[str, Any]]] = None,
                 store: Optional[MemoryStore] = None, write_gate: Any = None) -> str:
@@ -271,14 +286,15 @@ def _memory_tool(action, target, content, old_text, new_text, operations, store,
     if operations:
         if not isinstance(operations, list):
             return _invalid("operations must be a list of {action, content?, old_text?} objects.")
-        denied = (_background_delete_gate(store, action, operations, target)
-                  or _relevance_gate(write_gate, store, None, target, None, None, operations))
+        # Relevance first: approval replays a staged write without any gate, so judge it before staging.
+        denied = (_relevance_gate(write_gate, store, None, target, None, None, operations)
+                  or _noted(_background_delete_gate(store, action, operations, target), write_gate))
         if denied is not None:
             return _refusal_outcome(write_gate), denied
         # Approval gate: stages (background/gateway) or prompts inline (CLI); off by default.
         gate_result = _apply_write_gate(store, "batch", target, None, None, operations)
         if gate_result is not None:
-            return "rejected", gate_result
+            return "rejected", _noted(gate_result, write_gate)
         return _applied(store.apply_batch(target, operations), write_gate)
     # Reject calls that provide neither action (single-op) nor operations
     # (batch).  Without this guard the dispatch falls through to the generic
@@ -292,9 +308,9 @@ def _memory_tool(action, target, content, old_text, new_text, operations, store,
     if action not in _STORE_ACTIONS:
         return _invalid(f"Unknown action '{action}'. Use: add, replace, remove")
     invalid = (_validate_single_op(store, action, target, content, old_text)
-               or _background_delete_gate(store, action, None, target, content, old_text)
                or _relevance_gate(write_gate, store, action, target, content, old_text)
-               or _apply_write_gate(store, action, target, content, old_text))
+               or _noted(_background_delete_gate(store, action, None, target, content, old_text), write_gate)
+               or _noted(_apply_write_gate(store, action, target, content, old_text), write_gate))
     if invalid is not None:
         return _refusal_outcome(write_gate), invalid
     return _applied(_STORE_ACTIONS[action][0](store, target, content, old_text), write_gate)
