@@ -206,3 +206,38 @@ class TestReviewRegressionsRound4:
             with pytest.raises(RelevanceRequestError):
                 client.ask("s", {"b": NoulQuestion("?")})
         assert "422" in caplog.text and "SECRET" not in caplog.text
+
+
+class TestReviewRegressionsRound6:
+    """Regressions from the PR review (round 6): calls without a turn deadline are bounded too."""
+
+    def test_a_trickling_body_is_abandoned_after_the_request_timeout(self):
+        sent = []
+
+        class Trickle(httpx.SyncByteStream):
+            def __iter__(self):
+                for _ in range(50):
+                    sent.append(1)
+                    time.sleep(0.1)
+                    yield b" "
+
+        transport = httpx.MockTransport(lambda request: httpx.Response(200, stream=Trickle()))
+        client = SystemOneClient("k", transport=transport, sleep=lambda s: None, max_retries=0, timeout=1.0)
+        with pytest.raises(RelevanceTimeout):
+            client.ask("s", {"b": NoulQuestion("?")})
+        assert len(sent) < 50
+
+    def test_an_endless_body_is_cut_off_at_the_size_cap(self):
+        sent = []
+
+        class Endless(httpx.SyncByteStream):
+            def __iter__(self):
+                for _ in range(64):
+                    sent.append(1)
+                    yield b" " * 1_000_000
+
+        transport = httpx.MockTransport(lambda request: httpx.Response(200, stream=Endless()))
+        client = SystemOneClient("k", transport=transport, sleep=lambda s: None, max_retries=0)
+        with pytest.raises(RelevanceResponseError):
+            client.ask("s", {"b": NoulQuestion("?")})
+        assert len(sent) < 64  # without a cap all 64 MB are read before parsing fails

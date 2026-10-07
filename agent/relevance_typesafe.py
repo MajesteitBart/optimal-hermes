@@ -44,6 +44,7 @@ RETRY_STATUSES = frozenset({429, 502, 503, 504, 529})
 MAX_RETRY_WAIT_SECONDS = 4.0
 # An attempt needs at least this much of the time budget left to be worth starting.
 MIN_ATTEMPT_SECONDS = 0.3
+MAX_RESPONSE_BYTES = 8_000_000  # a full batch answers in well under 1 MB
 
 
 class RelevanceError(RuntimeError):
@@ -305,9 +306,12 @@ class SystemOneClient:
             for attempt in range(1, attempts + 1):
                 retry_delay = self._retry_delay(attempt, None) if attempt < attempts else None
                 try:
+                    phase_timeout = self._attempt_timeout()
+                    # httpx's timeout restarts with every chunk; timeout_seconds bounds the attempt as a whole.
+                    until = time.monotonic() + phase_timeout
                     with client.stream("POST", TYPESAFE_ENDPOINT, json=payload, headers=headers,
-                                       timeout=httpx.Timeout(self._attempt_timeout())) as response:
-                        content = self._read_body(response)
+                                       timeout=httpx.Timeout(phase_timeout)) as response:
+                        content = self._read_body(response, until)
                 except httpx.TransportError as exc:
                     logger.debug("TypeSafe transport error (attempt %d/%d): %s", attempt, attempts, exc)
                     if self._retry_after(retry_delay):
@@ -327,14 +331,17 @@ class SystemOneClient:
                 raise RelevanceRequestError(_status_message(response), status=response.status_code)
         raise AssertionError("unreachable: the last attempt always returns or raises")
 
-    def _read_body(self, response: httpx.Response) -> bytes:
-        """The whole body, abandoned at the deadline: httpx's read timeout restarts with every chunk, so
-        a server that trickles bytes would otherwise hold the request open indefinitely."""
-        chunks = []
+    def _read_body(self, response: httpx.Response, until: float) -> bytes:
+        """The whole body, abandoned at ``until`` (the attempt's timeout, capped by the turn deadline) or
+        past MAX_RESPONSE_BYTES: a server that trickles or streams endlessly cannot hold the call open."""
+        chunks, size = [], 0
         for chunk in response.iter_bytes():
             chunks.append(chunk)
-            if self._deadline is not None and time.monotonic() > self._deadline:
-                raise RelevanceTimeout("TypeSafe time budget exhausted")
+            size += len(chunk)
+            if size > MAX_RESPONSE_BYTES:
+                raise RelevanceResponseError(f"TypeSafe response exceeds {MAX_RESPONSE_BYTES} bytes")
+            if time.monotonic() > until:
+                raise RelevanceTimeout("TypeSafe request took longer than its timeout")
         return b"".join(chunks)
 
 

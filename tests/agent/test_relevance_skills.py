@@ -430,3 +430,29 @@ class TestReviewRegressionsRound5:
         context = rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
         assert "Skill selection was unavailable" in context and "skill_view" in context
         assert fake_systemone.requests == []
+
+
+class TestReviewRegressionsRound6:
+    """Regressions from the PR review (round 6)."""
+
+    def test_the_outage_note_follows_the_index_the_session_prompt_carries(self, fake_systemone):
+        from agent.prompt_builder import _SELECTION_SKILLS_HEADER
+
+        write_skill("pdf-tools", "PDFs.")
+        write_config("skills:\n  selection:\n    enabled: true\n    index: names\nrelevance:\n  max_retries: 0\n")
+        fake_systemone.replies = [httpx.Response(500)]
+        agent, _ = _agent(_cached_system_prompt=_SELECTION_SKILLS_HEADER)  # built with index: none
+        context = rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
+        assert "skills_list" in context
+
+    def test_a_settings_failure_falls_back_instead_of_failing_the_turn(self, fake_systemone, monkeypatch):
+        def broken(*args, **kwargs):
+            raise OSError("profile unreadable")
+
+        write_skill("pdf-tools", "PDFs.")
+        write_config("skills:\n  selection:\n    enabled: true\n")
+        agent, _ = _agent()
+        rs.agent_selection_config(agent)  # cached while the profile was readable
+        monkeypatch.setattr(rs, "load_settings", broken)
+        context = rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
+        assert "Skill selection was unavailable" in context

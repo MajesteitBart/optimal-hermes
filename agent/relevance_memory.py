@@ -201,12 +201,19 @@ def judge_write(answers: Mapping[str, Any], *, target: str = "memory", overlap: 
     def verdict(keep: bool, code: str = "", reason: str = "") -> WriteVerdict:
         return WriteVerdict(keep, reason, s, supersedes, code, hint)
 
+    # The user asked for it, so it saves; a duplicate or an update is flagged for the model to tidy instead.
+    requested = s["requested"] >= REQUESTED_MIN
     if s["duplicate"] >= DUPLICATE_MIN:
+        if requested:
+            return verdict(True, "duplicate", "an existing entry already says this; merge the two if they differ")
         return verdict(False, "duplicate", "an existing entry already says this")
     if supersedes is not None:
+        if requested:
+            return verdict(True, "supersedes", f"it updates the existing entry '{supersedes[:100]}'; remove that "
+                           "entry so memory does not contradict itself")
         return verdict(False, "supersedes", f"it updates the existing entry '{supersedes[:100]}'; replace that "
                        "entry (action='replace' with old_text from it) instead of adding a conflicting one")
-    if s["requested"] >= REQUESTED_MIN:
+    if requested:
         return verdict(True)
     if s["procedure"] >= PROCEDURE_MIN:
         return verdict(False, "procedure", "it is a procedure; save task know-how in a skill with skill_manage")
@@ -300,8 +307,8 @@ class MemoryWriteGate:
         candidates = [(c, target, _without_one(sim.target_entries, c) + sim.other_entries) for c, _ in pending]
         from agent.relevance import agent_config
 
-        settings = load_settings(agent_config(self.agent))
         try:
+            settings = load_settings(agent_config(self.agent))
             verdicts = assess_writes(candidates, user_message=self.user_message, settings=settings,
                                      deadline=settings.turn_deadline())
         except Exception as exc:  # RelevanceError, or a bug: neither may block a save
@@ -323,6 +330,9 @@ class MemoryWriteGate:
         hints = [f"'{c[:80]}' reads like a {'USER.md (target=user)' if v.store_hint == 'user' else 'MEMORY.md (target=memory)'} "
                  "entry" for c, v in zip((c for c, _ in pending), verdicts) if v.keep and v.store_hint]
         notes = [f"Store check: {'; '.join(hints)}; consider moving it."] if hints else []
+        tidy = [f"'{c[:80]}': {v.reason}" for c, v in zip((c for c, _ in pending), verdicts) if v.keep and v.reason]
+        if tidy:
+            notes.append(f"Saved as the user asked, but {'; '.join(tidy)}.")
         if not refused:
             self.note = " ".join(notes)
             return None

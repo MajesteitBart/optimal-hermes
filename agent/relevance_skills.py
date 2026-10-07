@@ -732,9 +732,11 @@ _FALLBACK_NOTE = (
 )
 
 
-def fallback_skill_note(cfg: SelectionConfig, tools: Set[str]) -> str:
-    where = ("skills_list" if cfg.index == "none" and "skills_list" in tools
-             else "the skill index in the system prompt")
+def fallback_skill_note(cfg: SelectionConfig, tools: Set[str], prompt: str = "") -> str:
+    # The session's prompt, when there is one, says whether a skill index is listed: config may have
+    # changed since that prompt was built.
+    listed = "<available_skills>" in prompt if prompt else cfg.index != "none"
+    where = "skills_list" if not listed and "skills_list" in tools else "the skill index in the system prompt"
     return _FALLBACK_NOTE.format(where=where)
 
 
@@ -781,7 +783,7 @@ def _selection_gate(agent: Any, cfg: SelectionConfig, tools: Set[str], user_mess
         return None, ""  # started without selection: its prompt still lists skills with the loading policy
     if not cfg.enabled:
         # Turned off mid-session: nothing is scored or sent, but the restored prompt promises attachments.
-        return None, fallback_skill_note(cfg, tools)
+        return None, fallback_skill_note(cfg, tools, getattr(agent, "_cached_system_prompt", "") or "")
     return request, ""
 
 
@@ -800,8 +802,8 @@ def build_turn_skill_context(
     from agent.relevance import agent_config
     from agent.relevance_memory import agent_memory_gate_config, note_lasting_signal
 
-    settings = load_settings(agent_config(agent))
     try:
+        settings = load_settings(agent_config(agent))
         import model_tools
 
         toolsets = {model_tools.get_toolset_for_tool(t) for t in tools} - {None, ""}
@@ -817,7 +819,7 @@ def build_turn_skill_context(
         logger.warning("Skill selection: %s", describe_error(exc))
         _warn_once(agent, error_code(exc))
         relevance_ledger.record("skills", session_id=getattr(agent, "session_id", None), error=error_code(exc))
-        return fallback_skill_note(cfg, tools)
+        return fallback_skill_note(cfg, tools, getattr(agent, "_cached_system_prompt", "") or "")
     _record_attached(report, task_id)
     agent._turn_attached_skills = [(s.candidate.name, s.candidate.description) for s in report.selection.selected]
     if report.signals.lasting is not None:

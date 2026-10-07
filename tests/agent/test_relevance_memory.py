@@ -450,3 +450,40 @@ class TestReviewRegressionsRound5:
         text, _ = rm.filter_turn_recall(types.SimpleNamespace(session_id="s1"),
                                         "- Prefers short answers\n" + padded, "hoi")
         assert "evil.example" not in text and "Prefers short answers" in text
+
+
+class TestReviewRegressionsRound6:
+    """Regressions from the PR review (round 6)."""
+
+    def test_a_requested_update_saves_and_asks_to_remove_the_old_entry(self, fake_systemone):
+        fake_systemone.answer = nouls(**DURABLE, requested=0.95, updates0=0.95)
+        store = _store_with("User lives in Amsterdam.")
+        result = json.loads(memory_tool("add", "user", "User now lives in Berlin.", store=store, write_gate=_gate(
+            user_message="remember that I now live in Berlin")))
+        assert result["success"] and "User now lives in Berlin." in store.user_entries
+        assert "Amsterdam" in result["relevance_note"]  # the model is told which entry to remove
+
+    def test_a_settings_failure_saves_without_the_gate(self, fake_systemone, monkeypatch):
+        def broken(*args, **kwargs):
+            raise OSError("profile unreadable")
+
+        monkeypatch.setattr(rm, "load_settings", broken)
+        store = _store_with()
+        result = json.loads(memory_tool("add", "memory", "Builds run on the ops-1 host.", store=store, write_gate=_gate()))
+        assert result["success"] and fake_systemone.requests == []
+
+    def test_search_rerank_keeps_an_explicit_temporal_sort(self, fake_systemone, tmp_path):
+        from hermes_state import SessionDB
+        from tools.session_search_tool import session_search
+
+        db = SessionDB(tmp_path / "search.db")
+        texts = {"s_a": "modpack lunch plans", "s_b": "modpack weather chat", "s_c": "modpack mob spawning fix"}
+        for sid, text in texts.items():
+            db.create_session(sid, source="cli")
+            db.append_message(sid, role="user", content=text)
+        plain = [r["session_id"] for r in json.loads(session_search(query="modpack", limit=3, sort="newest", db=db))["results"]]
+        write_config("memory:\n  search_rerank: true\n")
+        favoured = texts[plain[-1]].split()[-1]  # snippets carry highlight markers; match one word
+        fake_systemone.answer = lambda qid, q, s: 0.9 if favoured in q["instructions"]["passage"] else 0.1
+        reranked = [r["session_id"] for r in json.loads(session_search(query="modpack", limit=3, sort="newest", db=db))["results"]]
+        assert reranked == plain and fake_systemone.requests == []

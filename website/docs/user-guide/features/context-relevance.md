@@ -198,7 +198,8 @@ each other.
 
 `advise` saves everything and adds a note to the tool result when an entry looks wrong. `enforce`
 refuses. The model can override a refusal by repeating the identical call in the same turn, and
-the second attempt is saved; in a later turn the entry is judged again. Duplicates are checked across both stores, because one fact belongs in one store.
+the second attempt is saved; in a later turn the entry is judged again. An entry the user asked for
+always saves; when it repeats or updates an existing entry, the tool result says which one to tidy. Duplicates are checked across both stores, because one fact belongs in one store.
 
 ### Review gate
 
