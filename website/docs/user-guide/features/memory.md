@@ -289,6 +289,16 @@ guidance for a narrower profile-only block. The tool schema advertises only the
 `user` target, and direct or staged writes to disabled `MEMORY.md` are rejected.
 The inverse configuration advertises only `memory` and rejects `USER.md` writes.
 
+## Relevance gates
+
+Four opt-in gates use TypeSafe's Jev model to judge memory decisions:
+`memory.write_gate` (is this entry worth saving, or is it task progress, a procedure or a
+duplicate?), `memory.review_gate` (did the recent turns hold anything worth a background review?),
+`memory.review_events` (review early when the user reveals something lasting) and
+`memory.recall_filter` (pass only relevant recalled memories into the chat). `hermes memory audit`
+runs the write-gate questions over the entries you already have. See
+[Relevance scoring](./context-relevance.md#memory-gates).
+
 ## Controlling memory writes (`write_approval`)
 
 By default the agent saves memory freely — including from the background

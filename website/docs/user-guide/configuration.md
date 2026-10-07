@@ -782,6 +782,25 @@ Commands that require `stdin_data` or sudo automatically fall back to one-shot m
 
 See [Code Execution](features/code-execution.md) and the [Terminal section of the README](features/tools.md) for details on each backend.
 
+## Skill Selection
+
+`skills.selection` replaces the "load any skill that is even partially relevant" index with
+per-message scoring: every skill is scored 0-9 against the message with TypeSafe's Jev model, and
+the best are attached to the message in full, within a token budget.
+
+```yaml
+skills:
+  selection:
+    enabled: false
+    min_score: 6.5
+    target_score: 18
+    token_budget: 6000
+    index: names   # names | full | none
+```
+
+Needs `TYPESAFE_API_KEY`. See [Relevance scoring](./features/context-relevance.md) for every key,
+what is sent where, and the eval numbers behind the defaults.
+
 ## Skill Settings
 
 Skills can declare their own configuration settings via their SKILL.md frontmatter. These are non-secret values (paths, preferences, domain settings) stored under the `skills.config` namespace in `config.yaml`.
@@ -852,6 +871,10 @@ memory:
   user_char_limit: 1375     # ~500 tokens
   write_approval: false     # true = require approval before any memory write
 ```
+
+The relevance gates (`write_gate`, `review_gate`, `review_events`, `recall_filter`,
+`search_rerank`) let Jev judge what is worth remembering and which recalled memories reach the
+chat. They are off by default; see [Relevance scoring](./features/context-relevance.md#memory-gates).
 
 With `memory.write_approval: true`, memory writes need your approval before they land: interactive CLI turns prompt inline; messaging sessions and the background self-improvement review stage the write for `/memory pending` → `/memory approve <id>` / `/memory reject <id>` review. Toggle at runtime with `/memory approval on|off`. See [Controlling memory writes](./features/memory.md#controlling-memory-writes-write_approval).
 
