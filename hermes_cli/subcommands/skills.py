@@ -181,7 +181,8 @@ def build_skills_parser(subparsers, *, cmd_skills: Callable) -> None:
                     "budget. Same selection the agent runs per message with skills.selection.enabled. "
                     "Sends the task and skill names/descriptions to api.typesafe.ai (TYPESAFE_API_KEY).")
     skills_select.add_argument("prompt", nargs="?", default=None, help="The task ('-' reads it from stdin)")
-    skills_select.add_argument("-p", "--prompt", dest="prompt_opt", default=None, help="The task, as an option")
+    # No -p: Hermes reads -p/--profile anywhere in argv, so a one-word task would select a profile.
+    skills_select.add_argument("--prompt", dest="prompt_opt", default=None, help="The task, as an option")
     skills_select.add_argument("--context-file", default=None,
         help="Recent conversation scored with the task: plain text, or a JSON list of {role, text}")
     skills_select.add_argument("--min-score", type=float, default=None,

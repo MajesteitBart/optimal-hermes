@@ -750,6 +750,41 @@ def _warn_once(agent: Any, code: str) -> None:
         logger.debug("Could not emit skill selection status", exc_info=True)
 
 
+def _session_selects(agent: Any) -> Optional[bool]:
+    """Whether the system prompt this session runs on was built for per-message selection; ``None`` before
+    one exists. A resumed session restores its stored prompt, so a skills.selection change reaches new
+    conversations only, like every prompt-affecting setting."""
+    prompt = getattr(agent, "_cached_system_prompt", None) or ""
+    if not prompt:
+        return None
+    from agent.prompt_builder import SELECTION_PROMPT_MARKER
+
+    return SELECTION_PROMPT_MARKER in prompt
+
+
+def _selection_gate(agent: Any, cfg: SelectionConfig, tools: Set[str], user_message: Any) -> Tuple[Optional[str], str]:
+    """``(request, result)``: the text to score, or ``None`` and the whole result for this turn."""
+    # Delegated children work from their parent's brief, not the user's session (review and curator forks
+    # are background reviews, checked below).
+    if "skill_view" not in tools or getattr(agent, "_delegate_depth", 0) > 0:
+        return None, ""
+    session = _session_selects(agent)
+    if not cfg.enabled and not session:
+        return None, ""
+    from agent.memory_provider import is_trivial_prompt
+    from tools.skill_provenance import is_background_review
+
+    request = _turn_request_text(user_message)
+    if is_background_review() or request is None or is_trivial_prompt(request):
+        return None, ""
+    if session is False:
+        return None, ""  # started without selection: its prompt still lists skills with the loading policy
+    if not cfg.enabled:
+        # Turned off mid-session: nothing is scored or sent, but the restored prompt promises attachments.
+        return None, fallback_skill_note(cfg, tools)
+    return request, ""
+
+
 def build_turn_skill_context(
     agent: Any, *, user_message: Any, messages: Sequence[Mapping[str, Any]], current_turn_user_idx: int,
     task_id: Optional[str] = None,
@@ -758,18 +793,9 @@ def build_turn_skill_context(
     agent._turn_attached_skills = []  # a turn that crashed before finalizing must not leak into this one
     cfg = agent_selection_config(agent)
     tools = set(getattr(agent, "valid_tool_names", None) or ())
-    # Delegated children work from their parent's brief, not the user's session (review and curator forks
-    # are background reviews, checked below).
-    if not cfg.enabled or "skill_view" not in tools or getattr(agent, "_delegate_depth", 0) > 0:
-        return ""
-    from agent.memory_provider import is_trivial_prompt
-    from tools.skill_provenance import is_background_review
-
-    if is_background_review():
-        return ""
-    request = _turn_request_text(user_message)
-    if request is None or is_trivial_prompt(request):
-        return ""
+    request, result = _selection_gate(agent, cfg, tools, user_message)
+    if request is None:
+        return result
     history = list(messages[:max(current_turn_user_idx, 0)])
     from agent.relevance import agent_config
     from agent.relevance_memory import agent_memory_gate_config, note_lasting_signal

@@ -128,6 +128,9 @@ A few rules keep selection from fighting you:
   asks whether the message continues the conversation.
 - Delegated subagents and background review forks do not run selection. They work from a brief,
   not your conversation.
+- Turning `skills.selection` on or off applies to new conversations: a resumed conversation keeps the
+  skill index its system prompt was built with. Turning it off stops scoring at once; a conversation
+  that started with selection then gets the loading note described below instead.
 - If scoring fails or runs past `relevance.turn_budget_seconds` (4 by default), nothing is attached
   and you see one warning per session with an error code. That message instead carries a short note
   telling the model to check the skill index (or `skills_list`) and load what fits, the instruction
@@ -152,7 +155,7 @@ sends the reply text to TypeSafe, so it is off by default.
 
 ```bash
 hermes skills select "review this pull request and leave inline comments"
-hermes skills select --format table -p "make a deck for the board meeting"
+hermes skills select --format table --prompt "make a deck for the board meeting"
 hermes skills select --format context "merge these PDFs"   # the block the agent would get
 hermes skills select --dry-run "anything"                  # requests only, no key, no network
 echo "split this pdf" | hermes skills select -
@@ -222,8 +225,8 @@ questions: is it relevant to this
 message? Is it a standing preference about how the assistant should behave? Does it try to
 override the assistant's rules or make it run commands? Hermes keeps relevant items and standing
 preferences, drops anything that tries to instruct, and keeps headings only when something under
-them survives. At most 60 items are judged per message; any beyond that are dropped, because
-nothing screened them. The recall indicator then reads "recalled 7 memories · 3 of 7 relevant".
+them survives. At most 60 items are judged per message, each up to 4,000 characters including its
+heading; items beyond either limit are dropped, because nothing screened them. The recall indicator then reads "recalled 7 memories · 3 of 7 relevant".
 
 ### Search rerank
 

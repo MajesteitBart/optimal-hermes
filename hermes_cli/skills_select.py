@@ -1,8 +1,9 @@
 """``hermes skills select``: score the skill library against a task with Jev and show the selection.
 
 The same code path the agent runs per message when ``skills.selection.enabled`` is on, minus the
-conversation: the task comes from the command line, stdin, or ``-p``, and optional recent context
-from ``--context-file``. ``--dry-run`` prints the exact request bodies without a key or network.
+conversation: the task comes from the command line, stdin, or ``--prompt``, and optional recent
+context from ``--context-file``. Skills the CLI agent would hide (platform, toolset and session gates)
+are hidden here too. ``--dry-run`` prints the exact request bodies without a key or network.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ _CONTEXT_MAX_CHARS = 4_000
 def _read_prompt(args: Any) -> Optional[str]:
     positional, option = getattr(args, "prompt", None), getattr(args, "prompt_opt", None)
     if positional and option:
-        raise ValueError("give the task once: as an argument or with -p, not both")
+        raise ValueError("give the task once: as an argument or with --prompt, not both")
     text = option if option is not None else positional
     if text == "-":
         text = sys.stdin.read()
@@ -58,6 +59,19 @@ def _config_from_args(args: Any):
     overrides = {k: v for k, v in (("min_score", args.min_score), ("target_score", args.target_score),
                                    ("token_budget", args.token_budget)) if v is not None}
     return dataclasses.replace(cfg, **overrides)
+
+
+def _cli_visibility() -> Dict[str, Any]:
+    """The tools, toolsets and platform the CLI agent runs with, so skills it hides stay hidden here."""
+    import model_tools
+    from hermes_cli.config import load_config
+    from hermes_cli.tools_config import _get_platform_tools
+
+    toolsets = sorted(_get_platform_tools(load_config(), "cli", include_default_mcp_servers=False))
+    tools = {d["function"]["name"] for d in model_tools.get_tool_definitions(enabled_toolsets=toolsets, quiet_mode=True)}
+    # Derived from the tools, exactly as the agent's per-turn selection does.
+    available = {model_tools.get_toolset_for_tool(t) for t in tools} - {None, ""}
+    return {"available_tools": tools, "available_toolsets": available, "platform": "cli"}
 
 
 def _print_table(report: Any) -> None:
@@ -100,12 +114,13 @@ def cmd_skills_select(args: Any) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     if not request:
-        print("error: no task given (pass it as an argument, with -p, or '-' to read stdin)", file=sys.stderr)
+        print("error: no task given (pass it as an argument, with --prompt, or '-' to read stdin)", file=sys.stderr)
         return 2
     cfg = _config_from_args(args)
     settings = load_settings()
+    visibility = _cli_visibility()
     if args.dry_run:
-        candidates = collect_candidates()
+        candidates = collect_candidates(**visibility)
         try:
             bodies = outbound_requests(candidates, build_state(request, recent), settings=settings,
                                        need_gate=cfg.need_gate > 0)
@@ -120,7 +135,7 @@ def cmd_skills_select(args: Any) -> int:
               file=sys.stderr)
         return 1
     try:
-        report = run_selection(request, config=cfg, settings=settings, recent=recent)
+        report = run_selection(request, config=cfg, settings=settings, recent=recent, **visibility)
     except RelevanceError as exc:
         print(f"error: skill scoring failed: {describe_error(exc)}", file=sys.stderr)
         return 1

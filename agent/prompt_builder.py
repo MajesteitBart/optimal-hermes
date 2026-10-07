@@ -1402,11 +1402,12 @@ def _label_visible_entries(visible_entries: list[dict], skills_by_category: dict
         skills_by_category.setdefault(category, []).append((entry["load_name"], desc))
 
 
+# Marks a system prompt built for per-message selection; agent.relevance_skills reads it so a resumed
+# session keeps the mode its restored prompt was built with.
+SELECTION_PROMPT_MARKER = "Skills that look relevant to a message are attached to it in a <selected-skills> block."
 _SELECTION_SKILLS_HEADER = (
-    "## Skills\n"
-    "Skills that look relevant to a message are attached to it in a <selected-skills> block. Apply them "
-    "where they fit and ignore the ones that do not. When a task needs a skill that was not attached, "
-    "load it with skill_view(name)."
+    "## Skills\n" + SELECTION_PROMPT_MARKER + " Apply them where they fit and ignore the ones that do not. "
+    "When a task needs a skill that was not attached, load it with skill_view(name)."
 )
 
 

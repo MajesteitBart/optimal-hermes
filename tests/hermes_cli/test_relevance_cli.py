@@ -24,10 +24,11 @@ def _home() -> Path:
     return get_hermes_home()
 
 
-def write_skill(name, description, category="tools"):
+def write_skill(name, description, category="tools", frontmatter=""):
     path = _home() / "skills" / category / name / "SKILL.md"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(f"---\nname: {name}\ndescription: {description}\n---\n\n# {name}\n\nSteps.\n", encoding="utf-8")
+    path.write_text(f"---\nname: {name}\ndescription: {description}\n{frontmatter}---\n\n# {name}\n\nSteps.\n",
+                    encoding="utf-8")
 
 
 @pytest.fixture(autouse=True)
@@ -147,3 +148,36 @@ class TestInProcess:
         record("skills", selected=[{"name": "pdf-tools", "score": 8}], input_tokens=1000, elapsed_ms=250)
         assert cmd_relevance(argparse.Namespace(relevance_command="report", days=1, json=True)) == 0
         assert json.loads(capsys.readouterr().out)["features"]["skills"]["decisions"] == 1
+
+
+def _select_parser():
+    from hermes_cli.subcommands.skills import build_skills_parser
+
+    root = argparse.ArgumentParser()
+    build_skills_parser(root.add_subparsers(dest="command"), cmd_skills=lambda args: 0)
+    skills = next(a for a in root._actions if isinstance(a, argparse._SubParsersAction)).choices["skills"]
+    return next(a for a in skills._actions if isinstance(a, argparse._SubParsersAction)).choices["select"]
+
+
+class TestReviewRegressionsRound5:
+    """Regressions from the PR review (round 5)."""
+
+    def test_the_task_option_never_reads_as_a_profile(self):
+        from hermes_cli.main import _scan_profile_flag
+
+        option = next(a for a in _select_parser()._actions if a.dest == "prompt_opt")
+        for flag in option.option_strings:
+            # Hermes reads -p/--profile anywhere in argv, so a one-word task must not select a profile.
+            assert _scan_profile_flag(["skills", "select", flag, "pdf"]) == (None, 0, None), flag
+
+    def test_the_preview_hides_skills_the_cli_agent_hides(self, fake_systemone, capsys):
+        from hermes_cli.skills_select import cmd_skills_select
+
+        write_skill("pdf-tools", "Merge PDFs.")
+        write_skill("teams-notes", "Summarize Teams meetings.",
+                    frontmatter="metadata:\n  hermes:\n    session_platforms: [teams]\n")
+        assert cmd_skills_select(_args(prompt="summarize the meeting", dry_run=True)) == 0
+        assert json.loads(capsys.readouterr().out)["skills"] == ["pdf-tools"]
+        fake_systemone.answer = skill_scores({"pdf-tools": 2.0, "teams-notes": 9.0})
+        assert cmd_skills_select(_args(prompt="summarize the meeting")) == 0
+        assert [r["name"] for r in json.loads(capsys.readouterr().out)["ranked"]] == ["pdf-tools"]

@@ -201,9 +201,10 @@ class TestContextAwareness:
 
 def _agent(**kw):
     statuses = []
-    agent = types.SimpleNamespace(valid_tool_names={"skill_view", "skills_list", "skill_manage"}, platform="cli",
-                                  session_id="sess-1", _cached_system_prompt="", _emit_status=statuses.append,
-                                  _emit_warning=statuses.append, **kw)
+    fields = dict(valid_tool_names={"skill_view", "skills_list", "skill_manage"}, platform="cli",
+                  session_id="sess-1", _cached_system_prompt="", _emit_status=statuses.append,
+                  _emit_warning=statuses.append)
+    agent = types.SimpleNamespace(**{**fields, **kw})
     return agent, statuses
 
 
@@ -408,3 +409,24 @@ class TestReviewRegressionsRound4:
         agent, _ = _agent()
         context = rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
         assert "skills_list" in context  # with index none the system prompt lists no skills
+
+
+class TestReviewRegressionsRound5:
+    """Regressions from the PR review (round 5): the session's prompt, not today's config, decides."""
+
+    def test_a_session_started_without_selection_keeps_its_prompt(self, fake_systemone):
+        write_skill("pdf-tools", "PDFs.")
+        write_config("skills:\n  selection:\n    enabled: true\n")
+        agent, _ = _agent(_cached_system_prompt="## Skills\nBefore replying, scan the skills below.")
+        assert rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0) == ""
+        assert fake_systemone.requests == []  # its prompt still lists every skill with the loading policy
+
+    def test_turning_selection_off_mid_session_sends_nothing_and_restores_the_policy(self, fake_systemone):
+        from agent.prompt_builder import _SELECTION_SKILLS_HEADER
+
+        write_skill("pdf-tools", "PDFs.")
+        write_config("skills:\n  selection:\n    enabled: false\n")
+        agent, _ = _agent(_cached_system_prompt=_SELECTION_SKILLS_HEADER)
+        context = rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
+        assert "Skill selection was unavailable" in context and "skill_view" in context
+        assert fake_systemone.requests == []

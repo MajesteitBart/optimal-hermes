@@ -55,6 +55,7 @@ RECALL_RELEVANT_MIN = 0.3
 RECALL_PREFERENCE_MIN = 0.6
 RECALL_INJECTION_MIN = 0.8
 MAX_RECALL_ITEMS = 60
+RECALL_ITEM_MAX_CHARS = 4_000  # longer items (heading included) are dropped unscreened, like items past the cap
 RECALL_RECENT_MESSAGES = 4  # "what about that project?" needs the turns before it
 
 _STORE_LABELS = {
@@ -650,9 +651,12 @@ def filter_recall(
         return RecallFilterResult(text=text, total=0, kept=0)
     # The heading rides along: _join_kept restores it with any kept item, so it must be judged too.
     texts = [f"{lines[item.heading]}\n{item.text}" if item.heading >= 0 else item.text for item in scored]
+    # An item too long to fit a request would fail the whole filter, and failure passes recall through
+    # unscreened: padding must not buy an instruction a way in.
+    screenable = [len(text) <= RECALL_ITEM_MAX_CHARS for text in texts]
     questions = {
         f"{kind}{i}": NoulQuestion({"memory": text, "question": prompt})
-        for i, text in enumerate(texts) for kind, prompt in RECALL_QUESTIONS.items()
+        for i, text in enumerate(texts) if screenable[i] for kind, prompt in RECALL_QUESTIONS.items()
     }
     from agent.relevance_skills import _clip
 
@@ -661,8 +665,8 @@ def filter_recall(
     keep: List[bool] = []
     details: List[Dict[str, Any]] = []
     for i, item in enumerate(scored):
-        scores = {k: _noul(result.answers, f"{k}{i}") for k in RECALL_QUESTIONS}
-        keep.append(judge_recall_item(scores))
+        scores = {k: _noul(result.answers, f"{k}{i}") for k in RECALL_QUESTIONS} if screenable[i] else {}
+        keep.append(screenable[i] and judge_recall_item(scores))
         details.append({"text": item.text, "scores": scores, "kept": keep[-1]})
     # Past the scoring cap nothing was screened for injection, so nothing there reaches the chat:
     # 60 harmless bullets must not carry an instruction in on item 61.
