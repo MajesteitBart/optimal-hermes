@@ -105,6 +105,7 @@ def cmd_skills_select(args: Any) -> int:
     from agent.relevance import RelevanceError, api_key, describe_error, load_settings
     from agent.relevance_skills import (
         api_key_hint, build_state, collect_candidates, outbound_requests, recent_conversation, run_selection,
+        skills_in_context,
     )
     from agent.relevance_typesafe import TYPESAFE_ENDPOINT
 
@@ -118,12 +119,14 @@ def cmd_skills_select(args: Any) -> int:
         print("error: no task given (pass it as an argument, with --prompt, or '-' to read stdin)", file=sys.stderr)
         return 2
     cfg = _config_from_args(args)
+    history = [{"role": r["role"], "content": r["text"]} for r in recent]
+    exclude = skills_in_context(history)  # loaded earlier in the conversation: the agent skips these too
     # The agent sends the last recent_messages user/assistant messages, each cut to 600 characters.
-    recent = recent_conversation([{"role": r["role"], "content": r["text"]} for r in recent], limit=cfg.recent_messages)
+    recent = recent_conversation(history, limit=cfg.recent_messages)
     settings = load_settings()
     visibility = _cli_visibility()
     if args.dry_run:
-        candidates = collect_candidates(**visibility)
+        candidates = [c for c in collect_candidates(**visibility) if c.name not in exclude]
         try:
             bodies = outbound_requests(candidates, build_state(request, recent), settings=settings,
                                        need_gate=cfg.need_gate > 0)
@@ -138,7 +141,7 @@ def cmd_skills_select(args: Any) -> int:
               file=sys.stderr)
         return 1
     try:
-        report = run_selection(request, config=cfg, settings=settings, recent=recent, **visibility)
+        report = run_selection(request, config=cfg, settings=settings, recent=recent, exclude=exclude, **visibility)
     except RelevanceError as exc:
         print(f"error: skill scoring failed: {describe_error(exc)}", file=sys.stderr)
         return 1

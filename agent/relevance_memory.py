@@ -260,33 +260,35 @@ def _fingerprint(target: str, content: str) -> str:
     return hashlib.sha256(f"{target}\x00{' '.join(content.split())}".encode("utf-8")).hexdigest()
 
 
-def _write_candidates(store: Any, action: Optional[str], target: str, content: Optional[str],
-                      old_text: Optional[str], operations: Optional[List[Dict[str, Any]]]) -> List[Tuple[str, Tuple[str, str]]]:
-    """``(content, (action, old_text))`` for every add/replace in the call."""
+def _call_ops(action: Optional[str], content: Optional[str], old_text: Optional[str],
+              operations: Optional[List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
     ops = operations if operations else [{"action": action, "content": content, "old_text": old_text}]
+    return [op if isinstance(op, dict) else {} for op in ops]
+
+
+def _write_candidates(store: Any, action: Optional[str], target: str, content: Optional[str],
+                      old_text: Optional[str], operations: Optional[List[Dict[str, Any]]]) -> List[Tuple[str, str, int]]:
+    """``(content, action, op index)`` for every add/replace in the call."""
     out = []
-    for op in ops:
-        op = op if isinstance(op, dict) else {}
+    for i, op in enumerate(_call_ops(action, content, old_text, operations)):
         text = op.get("content") or op.get("new_text")
         if op.get("action") in ("add", "replace") and isinstance(text, str) and text.strip():
-            out.append((text.strip(), (str(op["action"]), str(op.get("old_text") or ""))))
+            out.append((text.strip(), str(op["action"]), i))
     return out
 
 
-def _override_key(target: str, content: str, op: Tuple[str, str]) -> str:
-    """A refusal licenses repeating the same call: same action, same selector, same content."""
-    action, old_text = op
-    return _fingerprint(target, f"{action}\x00{' '.join(old_text.split())}\x00{content}")
+def _call_key(target: str, ops: Sequence[Mapping[str, Any]]) -> str:
+    """The identity a refusal licenses: the complete, ordered call. Surrounding batch operations change
+    what lands (duplicates, supersession), so retrying an op inside a different batch is judged again."""
+    norm = [[str(op.get("action") or ""), " ".join(str(op.get("old_text") or "").split()),
+             " ".join(str(op.get("content") or op.get("new_text") or "").split())] for op in ops]
+    return _fingerprint(target, json.dumps(norm, ensure_ascii=False))
 
 
-def _is_noop(content: str, op: Tuple[str, str], entries: Sequence[str]) -> bool:
-    """An add of text the store holds (add is idempotent), or a replace whose one matched entry already
-    reads ``content``. A replace onto text another entry holds is not a no-op: it deletes and duplicates."""
-    action, old_text = op
-    if action == "add":
-        return content in entries
-    matches = [e for e in entries if old_text.strip() and old_text.strip() in e]
-    return len(matches) == 1 and matches[0] == content
+def _is_noop(content: str, action: str, current: Sequence[str], matched: Optional[str]) -> bool:
+    """An add of text the store holds (add is idempotent), or a replace whose matched entry (resolved by the
+    store's own matching, exact whole-entry first) already reads ``content``."""
+    return content in current if action == "add" else matched == content
 
 
 class MemoryWriteGate:
@@ -312,19 +314,20 @@ class MemoryWriteGate:
 
     def check(self, store: Any, action: Optional[str], target: str, content: Optional[str],
               old_text: Optional[str], operations: Optional[List[Dict[str, Any]]] = None) -> Optional[str]:
-        pairs = _write_candidates(store, action, target, content, old_text, operations)
+        candidates_in_call = _write_candidates(store, action, target, content, old_text, operations)
         refused_before = self._refused_before()
-        current = list(getattr(store, "user_entries" if target == "user" else "memory_entries", None) or ())
-        pending = [(c, o) for c, o in pairs
-                   if _override_key(target, c, o) not in refused_before and not _is_noop(c, o, current)]
-        if not pending:
-            return None  # nothing new to judge, or the model insisted on a refused entry
+        call = _call_key(target, _call_ops(action, content, old_text, operations))
+        if not candidates_in_call or call in refused_before:
+            return None  # nothing to judge, or the model repeated a refused call
         sim = entries_after_write(store, action, target, content, old_text, operations)
         if sim.refusal is not None:
             self.deferred_to_store = True
             return json.dumps(sim.refusal, ensure_ascii=False)
-        # Only what lands is judged: an entry a later op in the batch replaces or removes never does.
-        pending = [(c, o) for c, o in pending if c in sim.target_entries]
+        current = list(getattr(store, "user_entries" if target == "user" else "memory_entries", None) or ())
+        matched = sim.matched + [None] * len(candidates_in_call)
+        # Only what lands and changes something is judged: a later op in the batch may replace or remove it.
+        pending = [(c, a) for c, a, i in candidates_in_call
+                   if c in sim.target_entries and not _is_noop(c, a, current, matched[i])]
         if not pending:
             return None
         candidates = [(c, target, _without_one(sim.target_entries, c) + sim.other_entries) for c, _ in pending]
@@ -364,7 +367,7 @@ class MemoryWriteGate:
             self.note = " ".join([f"Saved, but this may not belong in memory as written: {listing}. Memory is "
                                   "injected into every session, so consider fixing or removing it.", *notes])
             return None
-        refused_before.update(_override_key(target, c, o) for c, o, _ in refused)
+        refused_before.add(call)
         from tools.registry import tool_error
 
         return tool_error(
@@ -387,6 +390,7 @@ class WriteSimulation:
     target_entries: List[str]  # the target store after the call
     other_entries: List[str]  # the other store, unchanged
     refusal: Optional[Dict[str, Any]] = None  # the store's own error when it would refuse the call
+    matched: List[Optional[str]] = field(default_factory=list)  # per op, the entry a replace/remove selects
 
 
 def entries_after_write(store: Any, action: Optional[str], target: str, content: Optional[str],
@@ -417,7 +421,7 @@ def entries_after_write(store: Any, action: Optional[str], target: str, content:
             working[index:index + 1] = [text] if op.get("action") == "replace" else []
         elif op.get("action") == "add" and text and text not in working:
             working.append(text)
-    return WriteSimulation(working, other_entries)
+    return WriteSimulation(working, other_entries, matched=list(matched))
 
 
 def all_entries(store: Any) -> List[str]:

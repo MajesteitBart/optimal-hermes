@@ -668,3 +668,55 @@ class TestReviewRegressionsRound13:
         agent = types.SimpleNamespace(session_id="s1", _memory_lasting_sum=2.0, _turns_since_memory=4)
         background_review.spawn_background_review_thread(agent, CONVERSATION, review_memory=True, task_cfg={})
         assert agent._memory_lasting_sum == 0.0 and agent._turns_since_memory == 0
+
+
+class TestReviewRegressionsRound14:
+    """Regressions from the PR security review (round 14)."""
+
+    def test_a_cross_profile_search_is_never_reranked(self, fake_systemone, tmp_path, monkeypatch):
+        from hermes_state import SessionDB
+        from tools.session_search_tool import session_search
+
+        write_config("memory:\n  search_rerank: true\n")
+        other = SessionDB(tmp_path / "work.db")
+        for sid, text in (("w1", "modpack plans"), ("w2", "modpack notes")):
+            other.create_session(sid, source="cli")
+            other.append_message(sid, role="user", content=text)
+        monkeypatch.setattr("tools.session_search_tool._resolve_profile_db", lambda _profile: other)
+        result = json.loads(session_search(query="modpack", profile="work", db=SessionDB(tmp_path / "mine.db")))
+        assert result["success"] and len(result["results"]) == 2
+        assert fake_systemone.requests == []  # this profile's opt-in does not cover another profile's sessions
+
+
+class TestReviewRegressionsRound15:
+    """Regressions from the PR review (round 15)."""
+
+    def test_a_refusal_licenses_only_the_identical_batch(self, fake_systemone):
+        fake_systemone.answer = nouls(durable=0.1, personal=0.1)
+        store, agent = _store_with("Uses Linux."), types.SimpleNamespace(session_id="s1", _user_turn_count=1)
+        first = json.loads(memory_tool(operations=[{"action": "add", "content": "It rained."}], store=store,
+                                       write_gate=_gate(agent=agent)))
+        assert first["success"] is False
+        changed = json.loads(memory_tool(operations=[{"action": "add", "content": "It rained."},
+                                                     {"action": "remove", "old_text": "Uses Linux"}],
+                                         store=store, write_gate=_gate(agent=agent)))
+        assert changed["success"] is False and "Uses Linux." in store.memory_entries
+
+    def test_a_replace_with_the_exactly_matched_entry_is_a_no_op(self, fake_systemone):
+        fake_systemone.answer = nouls(durable=0.1, personal=0.1)
+        store = _store_with("Uses Linux", "Uses Linux on laptop")
+        result = json.loads(memory_tool("replace", "memory", "Uses Linux", old_text="Uses Linux", store=store,
+                                        write_gate=_gate()))
+        assert result["success"] and fake_systemone.requests == []  # the store matches the whole entry first
+
+    def test_rotating_compression_keeps_the_lasting_signal(self):
+        rows = {"p": {"id": "p", "end_reason": "compression"}, "c": {"id": "c", "parent_session_id": "p"},
+                "n": {"id": "n", "parent_session_id": "c"}}
+        agent = types.SimpleNamespace(session_id="p", _session_db=types.SimpleNamespace(get_session=rows.get))
+        rm.note_lasting_signal(agent, 1.0)
+        agent.session_id = "c"  # compression continued the conversation in a child session
+        rm.note_lasting_signal(agent, 0.6)
+        assert agent._memory_lasting_sum == 1.6
+        agent.session_id = "n"  # its parent did not end by compression: a new conversation
+        rm.note_lasting_signal(agent, 0.2)
+        assert agent._memory_lasting_sum == 0.2

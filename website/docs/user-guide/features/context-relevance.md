@@ -236,7 +236,9 @@ heading; items beyond either limit are dropped, because nothing screened them. T
 ### Search rerank
 
 `session_search` ranks past conversations with full-text search. With `search_rerank` it gathers
-up to 12 candidates and returns the ones Jev judges most likely to answer the query.
+up to 12 candidates and returns the ones Jev judges most likely to answer the query. Cron sessions
+stay below your own, an explicit `newest` or `oldest` sort is kept as asked, and a search of another
+profile's sessions is never reranked: that profile has its own settings.
 
 ## Audits
 

@@ -125,11 +125,27 @@ def sync_session(agent: Any) -> None:
     except TypeError:
         return
     session = getattr(agent, "session_id", None)
-    if "_relevance_session" in state and state["_relevance_session"] == session:
+    previous = state.get("_relevance_session")
+    if "_relevance_session" in state and previous == session:
         return
-    for name in _SESSION_STATE:
-        state.pop(name, None)
+    if not _continues_by_compression(agent, previous, session):
+        for name in _SESSION_STATE:
+            state.pop(name, None)
     state["_relevance_session"] = session
+
+
+def _continues_by_compression(agent: Any, previous: Any, session: Any) -> bool:
+    """Rotating compression moves the same conversation into a child session; /new and /resume do not.
+    The child's parent is the previous session, and that parent ended by compression."""
+    db = getattr(agent, "_session_db", None)
+    if previous is None or session is None or db is None:
+        return False
+    try:
+        child, parent = db.get_session(session) or {}, db.get_session(previous) or {}
+    except Exception:  # lineage unreadable: treat as a new conversation (state restarts, which is safe)
+        logger.debug("Could not read session lineage for relevance state", exc_info=True)
+        return False
+    return child.get("parent_session_id") == previous and parent.get("end_reason") == "compression"
 
 
 def _call_budget(settings: RelevanceSettings, batches: int) -> float:

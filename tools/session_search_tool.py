@@ -386,7 +386,9 @@ def _discover(db, query: str, role_filter: Optional[List[str]], limit: int, sort
     results = [title_result] if title_result else []
     # memory.search_rerank: gather deeper, let Jev judge each match against the query, keep the best.
     from agent.relevance_memory import SEARCH_RERANK_DEPTH, search_rerank_enabled
-    rerank = sort is None and search_rerank_enabled()  # an explicit newest/oldest order is the contract
+    # An explicit newest/oldest order is the contract; another profile's sessions fall under that profile's
+    # consent, not this one's opt-in, so they are never sent for reranking.
+    rerank = sort is None and not link_profile and search_rerank_enabled()
     depth = max(limit, min(limit * 3, SEARCH_RERANK_DEPTH)) if rerank else limit
     if title_result and (title_lineage := title_result.pop("_lineage_root", None)):
         seen_sessions[title_lineage] = {"_title_only": True}

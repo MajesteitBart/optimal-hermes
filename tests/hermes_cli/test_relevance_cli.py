@@ -222,3 +222,18 @@ class TestReviewRegressionsRound10:
                     frontmatter="metadata:\n  hermes:\n    requires_toolsets: [ticketing]\n")
         assert cmd_skills_select(_args(prompt="triage the queue", dry_run=True)) == 0
         assert "ticket-triage" in json.loads(capsys.readouterr().out)["skills"]
+
+
+class TestReviewRegressionsRound15:
+    """Regressions from the PR review (round 15)."""
+
+    def test_the_preview_skips_skills_already_in_the_context(self, fake_systemone, capsys, tmp_path):
+        from hermes_cli.skills_select import cmd_skills_select
+
+        write_skill("pdf-tools", "Merge PDFs.")
+        write_skill("weather", "Forecasts.")
+        context = tmp_path / "ctx.json"
+        context.write_text(json.dumps([{"role": "user", "text": '[Selected skill "pdf-tools" · relevance 8.0]\nSteps.'}]),
+                           encoding="utf-8")
+        assert cmd_skills_select(_args(prompt="merge them", context_file=str(context), dry_run=True)) == 0
+        assert json.loads(capsys.readouterr().out)["skills"] == ["weather"]
