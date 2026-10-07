@@ -401,7 +401,12 @@ def entries_after_write(store: Any, action: Optional[str], target: str, content:
     that failure against the turn's retry budget, so the caller returns it instead of retrying."""
     ops = operations if operations else [{"action": action, "content": content, "old_text": old_text}]
     other = "user" if target == "memory" else "memory"
-    other_entries = [str(e) for e in (store._entries_for(other) or [])]
+    enabled = getattr(store, "target_enabled", lambda _t: True)
+    for name in (target, other):
+        if enabled(name) and hasattr(store, "refresh"):
+            store.refresh(name)  # another session may have written since this store loaded
+    # A disabled store is hidden from the prompt and not editable: its entries cannot veto a write here.
+    other_entries = [str(e) for e in (store._entries_for(other) or [])] if enabled(other) else []
     resolved: Dict[str, Any] = {"success": True}
     matched: List[Optional[str]] = [None]
     if operations:

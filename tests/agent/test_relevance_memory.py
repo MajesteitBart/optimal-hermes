@@ -720,3 +720,30 @@ class TestReviewRegressionsRound15:
         agent.session_id = "n"  # its parent did not end by compression: a new conversation
         rm.note_lasting_signal(agent, 0.2)
         assert agent._memory_lasting_sum == 0.2
+
+
+def _duplicate_of(fragment):
+    def answer(qid, question, state):
+        if qid == "duplicate":
+            return 0.95 if fragment in json.dumps(question) + json.dumps(state) else 0.0
+        return 0.9 if qid in ("durable", "personal") else 0.0
+    return answer
+
+
+class TestReviewRegressionsRound16:
+    """Regressions from the PR review (round 16)."""
+
+    def test_the_gate_reads_memory_another_session_wrote(self, fake_systemone):
+        fake_systemone.answer = _duplicate_of("ops-1 host")
+        mine = _store_with()  # loaded before another session wrote to the same file
+        _store_with("Builds run on the ops-1 host.")
+        result = json.loads(memory_tool("add", "memory", "Builds run on ops-1.", store=mine, write_gate=_gate()))
+        assert result["success"] is False
+
+    def test_a_disabled_store_does_not_veto_writes(self, fake_systemone):
+        _store_with().add("user", "Prefers short answers.")
+        write_config("memory:\n  user_profile_enabled: false\n")
+        store = load_on_disk_store()  # USER.md is now off: hidden from the prompt, not editable
+        fake_systemone.answer = _duplicate_of("short answers")
+        result = json.loads(memory_tool("add", "memory", "Prefers short answers.", store=store, write_gate=_gate()))
+        assert result["success"]

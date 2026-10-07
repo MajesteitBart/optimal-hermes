@@ -331,6 +331,11 @@ class MemoryStore:
             extra_fields = result[2] if len(result) > 2 else {}
             return self._success_response(target, result[1], **extra_fields)
 
+    def refresh(self, target: str) -> None:
+        """Re-read *target* from disk under the lock, writing nothing: another session may have changed the
+        file since this store loaded it (the write path reloads too, so a simulation must start from disk)."""
+        self._mutate(target, lambda entries, limit: {"success": True}, skip_drift=True)
+
     def add(self, target: str, content: str) -> Dict[str, Any]:
         """Append a new entry. Returns error if it would exceed the char limit."""
         content = content.strip()

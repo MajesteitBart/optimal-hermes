@@ -524,3 +524,12 @@ class TestReviewRegressionsRound13:
         agent._turn_attached_skills = [("pdf-tools", "Merge PDFs.", "Use pdftk.")]
         rs.track_turn_outcomes(agent, "merge the PDFs", "No reply: the turn stopped.", failed=True)
         assert started == []
+
+
+class TestReviewRegressionsRound16:
+    """Regressions from the PR review (round 16)."""
+
+    def test_skills_loaded_through_a_bundle_count_as_in_context(self):
+        header = ('[IMPORTANT: The user has invoked the "backend-dev" skill bundle, loading 2 skills together. '
+                  "Treat every skill below as active guidance for this turn.]\n\nSkills loaded: github, code-review\n")
+        assert {"github", "code-review"} <= rs.skills_in_context([{"role": "user", "content": header}])

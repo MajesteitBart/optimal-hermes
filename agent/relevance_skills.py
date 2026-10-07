@@ -81,6 +81,8 @@ _SKILL_IN_CONTEXT_RE = re.compile(
     r'\[(?:Selected skill "(?P<selected>[^"\n]+)" · relevance'
     r'|IMPORTANT: The (?:user has invoked the |user launched this CLI session with the )?"(?P<loaded>[^"\n]+)" skill)'
 )
+# A bundle or stacked invocation names its members on one line (agent.skill_commands._scaffold_header).
+_BUNDLE_LOADED_RE = re.compile(r"^Skills loaded: (?P<names>.+)$", re.M)
 
 
 # ── Config ──────────────────────────────────────────────────────────────────
@@ -586,6 +588,8 @@ def skills_in_context(messages: Sequence[Mapping[str, Any]], *, system_prompt: s
     for text in texts:
         for match in _SKILL_IN_CONTEXT_RE.finditer(text or ""):
             names.add(match.group("selected") or match.group("loaded"))
+        for match in _BUNDLE_LOADED_RE.finditer(text or ""):
+            names.update(n.strip() for n in match.group("names").split(",") if n.strip())
     return names | _skill_view_names(messages)
 
 
