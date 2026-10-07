@@ -456,3 +456,26 @@ class TestReviewRegressionsRound6:
         monkeypatch.setattr(rs, "load_settings", broken)
         context = rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
         assert "Skill selection was unavailable" in context
+
+
+class TestReviewRegressionsRound9:
+    """Regressions from the PR review (round 9)."""
+
+    def test_codex_app_server_turns_keep_the_default_skill_policy(self, fake_systemone):
+        # That runtime submits the raw user message, so a per-turn block would never reach the model.
+        write_skill("pdf-tools", "PDFs.")
+        write_config("skills:\n  selection:\n    enabled: true\n")
+        agent, _ = _agent(api_mode="codex_app_server")
+        assert rs.selection_index_mode(agent) is None
+        assert rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0) == ""
+        assert fake_systemone.requests == []
+
+    def test_outcomes_are_scored_against_the_skill_body(self, fake_systemone):
+        write_skill("pdf-tools", "PDFs.", body="Merge with: pdftk a.pdf b.pdf cat output out.pdf")
+        write_config("skills:\n  selection:\n    enabled: true\n    rerank: false\n")
+        fake_systemone.answer = skill_scores({"pdf-tools": 8.0})
+        agent, _ = _agent()
+        rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
+        fake_systemone.requests.clear()
+        rs.score_outcomes("merge PDFs", "Done.", agent._turn_attached_skills)
+        assert "pdftk" in json.dumps(fake_systemone.requests[0]["questions"])  # not just name and description

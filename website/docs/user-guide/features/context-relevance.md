@@ -128,7 +128,9 @@ A few rules keep selection from fighting you:
 - When the message starts a new topic, the close read ignores the earlier turns. The first request
   asks whether the message continues the conversation.
 - Delegated subagents and background review forks do not run selection. They work from a brief,
-  not your conversation.
+  not your conversation. Agents on the `codex_app_server` runtime do not either: it submits the
+  user's message as typed, so an attached block would never arrive. Their prompt keeps the usual
+  skill index and loading policy.
 - Turning `skills.selection` on or off applies to new conversations: a resumed conversation keeps the
   skill index its system prompt was built with. Turning it off stops scoring at once; a conversation
   that started with selection then gets the loading note described below instead.
@@ -150,7 +152,8 @@ Attaching a skill says nothing about whether it helped. With `track_outcomes: tr
 after each turn that attached skills whether the reply actually followed each one, in the
 background, and logs the answer. `hermes relevance report` then lists the skills that get
 attached but ignored, which usually points at a description or trigger that is too broad. This
-sends the reply text to TypeSafe, so it is off by default.
+sends the reply text and the opening 1,500 characters of each attached skill to TypeSafe, so it is
+off by default.
 
 ### Try it from the command line
 

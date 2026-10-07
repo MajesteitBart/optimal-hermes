@@ -154,10 +154,16 @@ def agent_selection_config(agent: Any) -> SelectionConfig:
     return resolved
 
 
+def _receives_turn_context(agent: Any) -> bool:
+    """Whether per-turn context reaches the model. codex_app_server submits the raw user message
+    (turn_context skips the api_content stamp for it), so an attached block would never arrive."""
+    return getattr(agent, "api_mode", None) != "codex_app_server"
+
+
 def selection_index_mode(agent: Any) -> Optional[str]:
-    """The system-prompt index mode when selection is on, ``None`` when it is off."""
+    """The system-prompt index mode when selection is on, ``None`` when it is off (or cannot deliver)."""
     cfg = agent_selection_config(agent)
-    return cfg.index if cfg.enabled else None
+    return cfg.index if cfg.enabled and _receives_turn_context(agent) else None
 
 
 # ── Inventory ───────────────────────────────────────────────────────────────
@@ -770,7 +776,7 @@ def _selection_gate(agent: Any, cfg: SelectionConfig, tools: Set[str], user_mess
     """``(request, result)``: the text to score, or ``None`` and the whole result for this turn."""
     # Delegated children work from their parent's brief, not the user's session (review and curator forks
     # are background reviews, checked below).
-    if "skill_view" not in tools or getattr(agent, "_delegate_depth", 0) > 0:
+    if "skill_view" not in tools or getattr(agent, "_delegate_depth", 0) > 0 or not _receives_turn_context(agent):
         return None, ""
     session = _session_selects(agent)
     if not cfg.enabled and not session:
@@ -823,7 +829,9 @@ def build_turn_skill_context(
         relevance_ledger.record("skills", session_id=getattr(agent, "session_id", None), error=error_code(exc))
         return fallback_skill_note(cfg, tools, getattr(agent, "_cached_system_prompt", "") or "")
     _record_attached(report, task_id)
-    agent._turn_attached_skills = [(s.candidate.name, s.candidate.description) for s in report.selection.selected]
+    # The body excerpt rides along so outcome scoring can judge the procedure, not just the topic.
+    agent._turn_attached_skills = [(s.candidate.name, s.candidate.description, skill_excerpt(s.candidate.path))
+                                   for s in report.selection.selected]
     if report.signals.lasting is not None:
         note_lasting_signal(agent, report.signals.lasting)
     _log_report(report)
@@ -859,20 +867,23 @@ FOLLOWED_QUESTION = ("Does `reply` apply the guidance of `skill`: does it follow
 
 
 def score_outcomes(
-    request: str, reply: str, skills: Sequence[Tuple[str, str]], *, settings: Optional[RelevanceSettings] = None,
+    request: str, reply: str, skills: Sequence[Tuple[str, ...]], *, settings: Optional[RelevanceSettings] = None,
     key: Optional[str] = None, transport: Any = None,
 ) -> Tuple[Dict[str, float], Evaluation]:
-    """P(the reply followed each attached skill), keyed by skill name. Raises RelevanceError."""
-    questions = {f"f{i}": NoulQuestion({"skill": {"name": name, "description": desc}, "question": FOLLOWED_QUESTION})
-                 for i, (name, desc) in enumerate(skills)}
+    """P(the reply followed each attached skill), keyed by skill name. ``skills`` holds ``(name, description,
+    body excerpt)``; the excerpt carries the procedure the reply should follow. Raises RelevanceError."""
+    questions = {f"f{i}": NoulQuestion({"skill": {"name": skill[0], "description": skill[1],
+                                                  "guidance": skill[2] if len(skill) > 2 else ""},
+                                        "question": FOLLOWED_QUESTION})
+                 for i, skill in enumerate(skills)}
     state = {"request": _clip(request, 2_000), "reply": _clip(reply, 4_000)}
     result = evaluate(state, questions, settings=settings, key=key, transport=transport)
-    followed = {name: (result.answers[f"f{i}"].value if isinstance(result.answers[f"f{i}"], NoulAnswer) else 0.0)
-                for i, (name, _) in enumerate(skills)}
+    followed = {skill[0]: (result.answers[f"f{i}"].value if isinstance(result.answers[f"f{i}"], NoulAnswer) else 0.0)
+                for i, skill in enumerate(skills)}
     return followed, result
 
 
-def _record_outcomes(session_id: Optional[str], request: str, reply: str, skills: List[Tuple[str, str]]) -> None:
+def _record_outcomes(session_id: Optional[str], request: str, reply: str, skills: List[Tuple[str, ...]]) -> None:
     try:
         followed, evaluation = score_outcomes(request, reply, skills)
     except Exception as exc:  # background bookkeeping: log and move on
