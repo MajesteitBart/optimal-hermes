@@ -589,14 +589,13 @@ class TestReviewRegressionsRound10:
 class TestReviewRegressionsRound11:
     """Regressions from the PR review (round 11)."""
 
-    def test_relevance_settings_follow_the_session(self):
+    def test_relevance_settings_follow_the_config_in_every_session(self):
         from agent import relevance_skills as rs
 
         write_config("skills:\n  selection:\n    enabled: true\nmemory:\n  write_gate: enforce\n")
         agent = types.SimpleNamespace(session_id="s1")
         assert rs.agent_selection_config(agent).enabled and rm.agent_memory_gate_config(agent).write_gate == "enforce"
         write_config("skills:\n  selection:\n    enabled: false\nmemory:\n  write_gate: \"off\"\n")
-        assert rs.agent_selection_config(agent).enabled  # the same session keeps what it started with
         agent.session_id = "s2"  # /new or /resume on the same agent
         assert not rs.agent_selection_config(agent).enabled and rm.agent_memory_gate_config(agent).write_gate == "off"
 
@@ -615,3 +614,14 @@ class TestReviewRegressionsRound11:
         store = _store_with("Builds run on the ops-1 host.")
         result = json.loads(memory_tool("add", "memory", "Builds run on the ops-1 host.", store=store, write_gate=_gate()))
         assert result["success"] and fake_systemone.requests == []
+
+
+class TestReviewRegressionsRound12:
+    """Regressions from the PR security review (round 12): opting out stops uploads at once."""
+
+    def test_turning_the_write_gate_off_mid_session_stops_it(self):
+        write_config("memory:\n  write_gate: enforce\n")
+        agent = types.SimpleNamespace(session_id="s1")
+        assert rm.build_write_gate(agent, []) is not None
+        write_config("memory:\n  write_gate: \"off\"\n")
+        assert rm.build_write_gate(agent, []) is None  # same session: nothing more is sent

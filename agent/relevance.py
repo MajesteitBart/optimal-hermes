@@ -112,9 +112,9 @@ def api_key() -> Optional[str]:
     return value.strip() if isinstance(value, str) and value.strip() else None
 
 
-# Relevance state kept on the agent object. All of it belongs to one conversation.
-_SESSION_STATE = ("_skill_selection_config", "_memory_gate_config", "_skill_selection_warned",
-                  "_memory_gate_refused", "_memory_lasting_sum")
+# Relevance state kept on the agent object. All of it belongs to one conversation (config is not cached:
+# it is read live, so opting out takes effect at once).
+_SESSION_STATE = ("_skill_selection_warned", "_memory_gate_refused", "_memory_lasting_sum")
 
 
 def sync_session(agent: Any) -> None:

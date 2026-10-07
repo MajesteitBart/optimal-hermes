@@ -479,3 +479,22 @@ class TestReviewRegressionsRound9:
         fake_systemone.requests.clear()
         rs.score_outcomes("merge PDFs", "Done.", agent._turn_attached_skills)
         assert "pdftk" in json.dumps(fake_systemone.requests[0]["questions"])  # not just name and description
+
+
+class TestReviewRegressionsRound12:
+    """Regressions from the PR security review (round 12): opting out stops uploads at once."""
+
+    def test_turning_selection_off_mid_session_stops_uploads(self, fake_systemone):
+        from agent.prompt_builder import _SELECTION_SKILLS_HEADER
+
+        write_skill("pdf-tools", "PDFs.")
+        write_config("skills:\n  selection:\n    enabled: true\n")
+        fake_systemone.answer = skill_scores({"pdf-tools": 8.0})
+        agent, _ = _agent(_cached_system_prompt=_SELECTION_SKILLS_HEADER)
+        rs.build_turn_skill_context(agent, user_message="merge PDFs", messages=[], current_turn_user_idx=0)
+        sent = len(fake_systemone.requests)
+        assert sent > 0
+        write_config("skills:\n  selection:\n    enabled: false\n")
+        context = rs.build_turn_skill_context(agent, user_message="split this PDF", messages=[], current_turn_user_idx=0)
+        assert len(fake_systemone.requests) == sent  # consent withdrawn: nothing more leaves the machine
+        assert "Skill selection was unavailable" in context  # the prompt still promises attachments

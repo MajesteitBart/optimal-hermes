@@ -100,20 +100,16 @@ def load_memory_gate_config(config: Optional[Mapping[str, Any]] = None) -> Memor
 
 
 def agent_memory_gate_config(agent: Any) -> MemoryGateConfig:
-    """Resolved once per session, like the rest of the memory config."""
+    """The memory gates from the agent's profile, read on every call (config loads are cached by file
+    signature): turning a gate off must stop uploads at once. None of them shapes the system prompt."""
     from agent.relevance import agent_config, sync_session
 
     sync_session(agent)
-    cached = getattr(agent, "_memory_gate_config", None)
-    if isinstance(cached, MemoryGateConfig):
-        return cached
     try:
-        resolved = load_memory_gate_config(agent_config(agent))
+        return load_memory_gate_config(agent_config(agent))
     except Exception:
         logger.warning("Could not read memory relevance gates; they stay off", exc_info=True)
-        resolved = MemoryGateConfig()
-    agent._memory_gate_config = resolved
-    return resolved
+        return MemoryGateConfig()
 
 
 def _noul(answers: Mapping[str, Any], qid: str) -> float:

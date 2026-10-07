@@ -138,21 +138,17 @@ def load_selection_config(config: Optional[Mapping[str, Any]] = None) -> Selecti
 
 
 def agent_selection_config(agent: Any) -> SelectionConfig:
-    """``skills.selection`` resolved once per session, so the system-prompt index and the per-turn
-    selection can never disagree within one conversation."""
+    """``skills.selection`` from the agent's profile, read on every call (config loads are cached by file
+    signature): turning selection off must stop uploads at once. The session's index mode is not taken
+    from here but from its own system prompt (_session_selects), so a live read cannot desync the two."""
     from agent.relevance import agent_config, sync_session
 
     sync_session(agent)
-    cached = getattr(agent, "_skill_selection_config", None)
-    if isinstance(cached, SelectionConfig):
-        return cached
     try:
-        resolved = load_selection_config(agent_config(agent))
+        return load_selection_config(agent_config(agent))
     except Exception:
         logger.warning("Could not read skills.selection; skill selection stays off", exc_info=True)
-        resolved = SelectionConfig()
-    agent._skill_selection_config = resolved
-    return resolved
+        return SelectionConfig()
 
 
 def _receives_turn_context(agent: Any) -> bool:
