@@ -490,6 +490,10 @@ def _consume_user_interrupt(agent, active: bool = True) -> tuple[bool, Any]:
 def _codex_developer_instructions(agent) -> str:
     """The prompt composition the standard loop sends as its system message (turn_context order)."""
     developer_instructions = getattr(agent, "_cached_system_prompt", None) or ""
+    from agent.relevance_skills import runtime_skill_policy
+
+    if policy := runtime_skill_policy(agent):  # skills.selection cannot deliver here
+        developer_instructions = (developer_instructions + "\n\n" + policy).strip()
     if getattr(agent, "ephemeral_system_prompt", None):
         developer_instructions = (developer_instructions + "\n\n" + agent.ephemeral_system_prompt).strip()
     return developer_instructions

@@ -762,7 +762,7 @@ def finalize_turn(
 
     # skills.selection.track_outcomes: did the reply use the attached skills? (background, ledger only)
     from agent.relevance_skills import track_turn_outcomes
-    track_turn_outcomes(agent, original_user_message, final_response, interrupted=interrupted)
+    track_turn_outcomes(agent, original_user_message, final_response, interrupted=interrupted, failed=failed)
 
     # External memory provider: sync the completed turn + queue next prefetch.
     agent._sync_external_memory_for_turn(
@@ -785,9 +785,6 @@ def finalize_turn(
                 messages_snapshot=list(messages), review_memory=_should_review_memory,
                 review_skills=_should_review_skills,
             )
-            from agent.relevance_memory import review_scheduled
-
-            review_scheduled(agent, _should_review_memory)
 
     # Memory provider on_session_end()/shutdown_all() are NOT called here:
     # run_conversation() runs once per message; CLI/gateway own session-end cleanup.

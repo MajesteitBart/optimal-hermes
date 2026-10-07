@@ -1348,6 +1348,11 @@ def spawn_background_review_thread(
     memory operation set."""
     if task_cfg is None:
         task_cfg = _background_review_task_config()
+    # Called only once prepare_background_review_run() accepted the run: the review's signals restart here,
+    # not when it became due, so a refused or interrupted spawn keeps them for the next turn.
+    from agent.relevance_memory import review_scheduled
+
+    review_scheduled(agent, review_memory)
     # Per-agent overrides (agent._MEMORY_REVIEW_PROMPT etc.) keep working.
     name = _PROMPT_NAME_BY_SCOPE[(review_memory, review_skills)]
     prompt = getattr(agent, name, globals()[name])

@@ -745,6 +745,23 @@ def fallback_skill_note(cfg: SelectionConfig, tools: Set[str], prompt: str = "")
     return _FALLBACK_NOTE.format(where=where)
 
 
+_RUNTIME_FALLBACK_NOTE = (
+    "Skills are not attached to messages on this runtime. Before replying, check {where} and load each skill "
+    "that matches or is even partially relevant to the task with skill_view(name)."
+)
+
+
+def runtime_skill_policy(agent: Any) -> str:
+    """The loading policy for a runtime that never receives per-turn context but runs a selection-era prompt
+    (a runtime switch keeps the conversation and restores its prompt); appended to its instructions."""
+    tools = set(getattr(agent, "valid_tool_names", None) or ())
+    if _receives_turn_context(agent) or "skill_view" not in tools or not _session_selects(agent):
+        return ""
+    listed = "<available_skills>" in (getattr(agent, "_cached_system_prompt", "") or "")
+    return _RUNTIME_FALLBACK_NOTE.format(
+        where="skills_list" if not listed and "skills_list" in tools else "the skill index above")
+
+
 def _warn_once(agent: Any, code: str) -> None:
     """One chat warning per agent, carrying only an error code (never response text)."""
     if getattr(agent, "_skill_selection_warned", False):
@@ -892,12 +909,14 @@ def _record_outcomes(session_id: Optional[str], request: str, reply: str, skills
         cost = {}
 
 
-def track_turn_outcomes(agent: Any, user_message: Any, final_response: Any, *, interrupted: bool = False) -> None:
+def track_turn_outcomes(agent: Any, user_message: Any, final_response: Any, *, interrupted: bool = False,
+                        failed: bool = False) -> None:
     """``skills.selection.track_outcomes``: after a turn that attached skills, ask in the background
     whether the reply followed each one, and record it in the ledger (``hermes relevance report``)."""
     skills = list(getattr(agent, "_turn_attached_skills", None) or [])
     agent._turn_attached_skills = []
-    if interrupted or not skills or not isinstance(final_response, str) or not final_response.strip():
+    # A failed turn's reply is synthesized ("No reply: ..."): scoring it would count the skill as ignored.
+    if interrupted or failed or not skills or not isinstance(final_response, str) or not final_response.strip():
         return
     if not agent_selection_config(agent).track_outcomes:
         return

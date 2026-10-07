@@ -625,3 +625,46 @@ class TestReviewRegressionsRound12:
         assert rm.build_write_gate(agent, []) is not None
         write_config("memory:\n  write_gate: \"off\"\n")
         assert rm.build_write_gate(agent, []) is None  # same session: nothing more is sent
+
+
+class TestReviewRegressionsRound13:
+    """Regressions from the PR review (round 13)."""
+
+    def test_replacing_with_text_another_entry_holds_is_judged(self, fake_systemone):
+        fake_systemone.answer = nouls(durable=0.9, personal=0.9, duplicate=0.95)
+        store = _store_with("Uses vim.", "Builds run on ops-1.")
+        result = json.loads(memory_tool("replace", "memory", "Builds run on ops-1.", old_text="Uses vim",
+                                        store=store, write_gate=_gate()))
+        assert result["success"] is False and "Uses vim." in store.memory_entries  # deletes A, duplicates B
+        fake_systemone.requests.clear()
+        unchanged = json.loads(memory_tool("replace", "memory", "Builds run on ops-1.", old_text="ops-1",
+                                           store=store, write_gate=_gate()))
+        assert unchanged["success"] and fake_systemone.requests == []  # truly idempotent: not judged
+
+    def test_a_refused_add_does_not_license_a_replace(self, fake_systemone):
+        fake_systemone.answer = nouls(durable=0.1, personal=0.1)
+        store, agent = _store_with("Uses Linux."), types.SimpleNamespace(session_id="s1", _user_turn_count=1)
+        assert json.loads(memory_tool("add", "memory", "It rained.", store=store, write_gate=_gate(agent=agent)))["success"] is False
+        result = json.loads(memory_tool("replace", "memory", "It rained.", old_text="Uses Linux", store=store,
+                                        write_gate=_gate(agent=agent)))
+        assert result["success"] is False and "Uses Linux." in store.memory_entries
+
+    def test_a_trailing_remember_request_survives_a_long_message(self, fake_systemone):
+        def answer(qid, question, state):
+            if qid == "requested":
+                return 0.95 if "remember this" in question["instructions"]["user_message"] else 0.0
+            return 0.1  # otherwise low value
+
+        fake_systemone.answer = answer
+        store = _store_with()
+        message = "here is the deploy runbook: " + "step. " * 600 + "remember this"
+        result = json.loads(memory_tool("add", "memory", "Deploy runbook lives in ops/README.", store=store,
+                                        write_gate=_gate(user_message=message)))
+        assert result["success"]
+
+    def test_the_review_signal_resets_where_a_review_is_accepted(self):
+        from agent import background_review
+
+        agent = types.SimpleNamespace(session_id="s1", _memory_lasting_sum=2.0, _turns_since_memory=4)
+        background_review.spawn_background_review_thread(agent, CONVERSATION, review_memory=True, task_cfg={})
+        assert agent._memory_lasting_sum == 0.0 and agent._turns_since_memory == 0

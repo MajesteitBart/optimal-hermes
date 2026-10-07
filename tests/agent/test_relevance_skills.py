@@ -498,3 +498,29 @@ class TestReviewRegressionsRound12:
         context = rs.build_turn_skill_context(agent, user_message="split this PDF", messages=[], current_turn_user_idx=0)
         assert len(fake_systemone.requests) == sent  # consent withdrawn: nothing more leaves the machine
         assert "Skill selection was unavailable" in context  # the prompt still promises attachments
+
+
+class TestReviewRegressionsRound13:
+    """Regressions from the PR review (round 13)."""
+
+    def test_codex_runtime_gets_the_loading_policy_a_selection_prompt_lacks(self):
+        from agent.codex_runtime import _codex_developer_instructions
+        from agent.prompt_builder import _SELECTION_SKILLS_HEADER
+
+        # A runtime switch keeps the conversation, so the app-server agent restores a selection-era prompt.
+        agent = types.SimpleNamespace(api_mode="codex_app_server", _cached_system_prompt=_SELECTION_SKILLS_HEADER,
+                                      ephemeral_system_prompt=None, valid_tool_names={"skill_view", "skills_list"})
+        text = _codex_developer_instructions(agent)
+        assert text.startswith(_SELECTION_SKILLS_HEADER) and "even partially relevant" in text
+        agent._cached_system_prompt = "## Skills\nBefore replying, scan the skills below."
+        assert _codex_developer_instructions(agent) == agent._cached_system_prompt
+
+    def test_failed_turns_are_not_scored(self, monkeypatch):
+        write_config("skills:\n  selection:\n    enabled: true\n    track_outcomes: true\n")
+        started = []
+        monkeypatch.setattr("agent.memory_provider.spawn_context_thread",
+                            lambda target, name, args=(), **kw: types.SimpleNamespace(start=lambda: started.append(name)))
+        agent, _ = _agent()
+        agent._turn_attached_skills = [("pdf-tools", "Merge PDFs.", "Use pdftk.")]
+        rs.track_turn_outcomes(agent, "merge the PDFs", "No reply: the turn stopped.", failed=True)
+        assert started == []

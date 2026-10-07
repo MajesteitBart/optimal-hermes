@@ -143,6 +143,12 @@ def overlapping_entries(candidate: str, entries: Sequence[str], limit: int = MAX
     return list(ranked[:limit])
 
 
+def _clip(text: str, limit: int) -> str:
+    from agent.relevance_skills import _clip as clip
+
+    return clip(text, limit)
+
+
 def write_questions(existing_entries: Sequence[str], user_message: str,
                     overlap: Sequence[str] = ()) -> Dict[str, NoulQuestion]:
     questions = {
@@ -173,7 +179,7 @@ def write_questions(existing_entries: Sequence[str], user_message: str,
                         "both would leave memory with outdated or conflicting information?"})
     if user_message.strip():
         questions["requested"] = NoulQuestion({
-            "user_message": user_message.strip()[:2_000],
+            "user_message": _clip(user_message, 2_000),  # head and tail: "remember this" often comes last
             "question": "In `user_message`, did the user explicitly ask the assistant to remember, note or save "
                         "the information in `candidate_memory`?"})
     return questions
@@ -255,16 +261,32 @@ def _fingerprint(target: str, content: str) -> str:
 
 
 def _write_candidates(store: Any, action: Optional[str], target: str, content: Optional[str],
-                      old_text: Optional[str], operations: Optional[List[Dict[str, Any]]]) -> List[Tuple[str, str]]:
-    """``(content, old_text)`` for every add/replace in the call."""
+                      old_text: Optional[str], operations: Optional[List[Dict[str, Any]]]) -> List[Tuple[str, Tuple[str, str]]]:
+    """``(content, (action, old_text))`` for every add/replace in the call."""
     ops = operations if operations else [{"action": action, "content": content, "old_text": old_text}]
     out = []
     for op in ops:
         op = op if isinstance(op, dict) else {}
         text = op.get("content") or op.get("new_text")
         if op.get("action") in ("add", "replace") and isinstance(text, str) and text.strip():
-            out.append((text.strip(), str(op.get("old_text") or "")))
+            out.append((text.strip(), (str(op["action"]), str(op.get("old_text") or ""))))
     return out
+
+
+def _override_key(target: str, content: str, op: Tuple[str, str]) -> str:
+    """A refusal licenses repeating the same call: same action, same selector, same content."""
+    action, old_text = op
+    return _fingerprint(target, f"{action}\x00{' '.join(old_text.split())}\x00{content}")
+
+
+def _is_noop(content: str, op: Tuple[str, str], entries: Sequence[str]) -> bool:
+    """An add of text the store holds (add is idempotent), or a replace whose one matched entry already
+    reads ``content``. A replace onto text another entry holds is not a no-op: it deletes and duplicates."""
+    action, old_text = op
+    if action == "add":
+        return content in entries
+    matches = [e for e in entries if old_text.strip() and old_text.strip() in e]
+    return len(matches) == 1 and matches[0] == content
 
 
 class MemoryWriteGate:
@@ -292,9 +314,9 @@ class MemoryWriteGate:
               old_text: Optional[str], operations: Optional[List[Dict[str, Any]]] = None) -> Optional[str]:
         pairs = _write_candidates(store, action, target, content, old_text, operations)
         refused_before = self._refused_before()
-        # An entry already in the store is a no-op write (add is idempotent): nothing new to judge.
-        current = set(getattr(store, "user_entries" if target == "user" else "memory_entries", None) or ())
-        pending = [(c, o) for c, o in pairs if _fingerprint(target, c) not in refused_before and c not in current]
+        current = list(getattr(store, "user_entries" if target == "user" else "memory_entries", None) or ())
+        pending = [(c, o) for c, o in pairs
+                   if _override_key(target, c, o) not in refused_before and not _is_noop(c, o, current)]
         if not pending:
             return None  # nothing new to judge, or the model insisted on a refused entry
         sim = entries_after_write(store, action, target, content, old_text, operations)
@@ -318,7 +340,7 @@ class MemoryWriteGate:
             relevance_ledger.record("write_gate", session_id=getattr(self.agent, "session_id", None),
                                     mode=self.mode, target=target, error=error_code(exc))
             return None
-        refused = [(c, v) for (c, _), v in zip(pending, verdicts) if not v.keep]
+        refused = [(c, o, v) for (c, o), v in zip(pending, verdicts) if not v.keep]
         for c, v in zip((c for c, _ in pending), verdicts):
             decision = "kept" if v.keep else ("advised" if self.mode == "advise" else "refused")
             logger.info("Memory write gate: %s %s scores=%s", decision, c[:80].replace("\n", " "),
@@ -337,12 +359,12 @@ class MemoryWriteGate:
         if not refused:
             self.note = " ".join(notes)
             return None
-        listing = "; ".join(f"'{c[:120]}' ({v.reason})" for c, v in refused)
+        listing = "; ".join(f"'{c[:120]}' ({v.reason})" for c, _, v in refused)
         if self.mode == "advise":
             self.note = " ".join([f"Saved, but this may not belong in memory as written: {listing}. Memory is "
                                   "injected into every session, so consider fixing or removing it.", *notes])
             return None
-        refused_before.update(_fingerprint(target, c) for c, _ in refused)
+        refused_before.update(_override_key(target, c, o) for c, o, _ in refused)
         from tools.registry import tool_error
 
         return tool_error(
