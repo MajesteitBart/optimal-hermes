@@ -140,13 +140,15 @@ def _session_search(agent, args: dict, ctx: InlineToolContext) -> Any:
 
 
 def _memory(agent, args: dict, ctx: InlineToolContext) -> Any:
+    from agent.relevance_memory import build_write_gate
+
     result = _call_tool(
         "tools.memory_tool", "memory_tool", args,
         (
             ("action", "action"), ("target", "target", "memory"), ("content", "content"),
             ("old_text", "old_text"), ("new_text", "new_text"), ("operations", "operations"),
         ),
-        store=agent._memory_store,
+        store=agent._memory_store, write_gate=build_write_gate(agent, ctx.messages),
     )
     # Mirror built-in memory writes to external providers; gating lives in
     # MemoryManager.notify_memory_tool_write.

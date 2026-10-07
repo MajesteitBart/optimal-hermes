@@ -1,0 +1,3 @@
+# Jev response cache (40 MB+): local only, rebuilt by running the evals
+results/typesafe_cache.json
+results/*.tmp

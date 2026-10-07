@@ -181,6 +181,11 @@ Level 2: skill_view(name, path)  → Specific reference file       (varies)
 
 The agent only loads the full skill content when it actually needs it.
 
+With `skills.selection.enabled`, Hermes makes that decision before the model sees the message:
+every skill is scored against the message and the useful ones are attached in full. The system
+prompt then lists skill names only and drops the "load anything partially relevant" policy. See
+[Relevance scoring](./context-relevance.md).
+
 ## SKILL.md Format
 
 ```markdown

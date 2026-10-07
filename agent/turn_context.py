@@ -15,7 +15,7 @@ import time
 import uuid
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from agent.conversation_compression import recover_rotated_compression_session
 from agent.iteration_budget import IterationBudget
@@ -863,6 +863,23 @@ def _merge_gateway_notes(
     )
 
 
+def _merge_selected_skills(
+    agent: Any, user_message: Any, messages: List[Any], current_turn_user_idx: int, task_id: str,
+    plugin_user_context: str,
+) -> str:
+    """``skills.selection``: the skills scored as useful for this message ride the user-message
+    injection channel (stamped into ``api_content``, replayed verbatim), never the system prompt."""
+    from agent.relevance_skills import build_turn_skill_context
+
+    block = build_turn_skill_context(
+        agent, user_message=user_message, messages=messages, current_turn_user_idx=current_turn_user_idx,
+        task_id=task_id,
+    )
+    if not block:
+        return plugin_user_context
+    return plugin_user_context + "\n\n" + block if plugin_user_context else block
+
+
 def _bind_interrupt_scope(agent: Any, ra) -> None:
     """Record the execution thread so interrupt()/clear_interrupt() scope the tool-level
     signal to THIS agent's thread; clear stale state, preserving a pending interrupt."""
@@ -889,6 +906,7 @@ def _memory_query_text(original_user_message: Any) -> str:
 
 def _memory_turn_start_and_prefetch(
     agent: Any, original_user_message: Any, turn_author: Optional[Dict[str, Any]] = None,
+    history: Sequence[Dict[str, Any]] = (),
 ) -> str:
     """Notify memory providers of the new turn, then prefetch external memory once
     before the tool loop (skipped on trivial prompts with no semantic signal).
@@ -908,13 +926,18 @@ def _memory_turn_start_and_prefetch(
     with suppress(Exception):
         if not is_trivial_prompt(_query):
             ext_prefetch_cache = agent._memory_manager.prefetch_all(_query, session_id=agent.session_id) or ""
+    # memory.recall_filter: only the recalled items relevant to this message reach the chat.
+    _recall_note = ""
+    if ext_prefetch_cache:
+        from agent.relevance_memory import filter_turn_recall
+        ext_prefetch_cache, _recall_note = filter_turn_recall(agent, ext_prefetch_cache, _query, history=history)
     # Deterministic recall indicator via _emit_status so the model can't silently
     # drop injected memory.
-    if ext_prefetch_cache:
+    if ext_prefetch_cache or _recall_note:
         with suppress(Exception):
             _recall_indicator = agent._memory_manager.describe_recall()
             if _recall_indicator:
-                agent._emit_status(_recall_indicator)
+                agent._emit_status(_recall_indicator + _recall_note)
     return ext_prefetch_cache
 
 
@@ -1165,9 +1188,16 @@ def build_turn_context(
     plugin_user_context = _merge_gateway_notes(
         agent, messages, current_turn_user_idx, plugin_user_context
     )
+    plugin_user_context = _merge_selected_skills(
+        agent, original_user_message, messages, current_turn_user_idx, effective_task_id, plugin_user_context
+    )
+    # memory.review_events: a turn that revealed something lasting can bring the memory review forward.
+    from agent.relevance_memory import review_due
+    should_review_memory = review_due(agent, should_review_memory)
 
     _bind_interrupt_scope(agent, ra)
-    ext_prefetch_cache = _memory_turn_start_and_prefetch(agent, original_user_message, turn_author)
+    ext_prefetch_cache = _memory_turn_start_and_prefetch(agent, original_user_message, turn_author,
+                                                         history=messages[:current_turn_user_idx])
 
     # Title the session now: titling depends only on the user's ask (before any injected
     # context lands on list content), so it runs concurrently with the turn. Daemon thread,

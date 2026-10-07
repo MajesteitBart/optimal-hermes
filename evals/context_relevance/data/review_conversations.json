@@ -1,0 +1,1140 @@
+[
+  {
+    "id": "rv-001",
+    "messages": [
+      {
+        "role": "user",
+        "text": "hi, I just started as head of operations at Korenbloem, we're a bakery chain with 14 stores around Ghent. first big job: the staff rota is a mess"
+      },
+      {
+        "role": "assistant",
+        "text": "Congratulations on the new role. What does the rota look like today: one spreadsheet for all stores, or one per store?"
+      },
+      {
+        "role": "user",
+        "text": "one per store, all different formats. some managers use paper and photograph it"
+      },
+      {
+        "role": "assistant",
+        "text": "Then the first step is one template every store can fill in. Which columns do you need: shift start and end, role, store, and contract hours?"
+      },
+      {
+        "role": "user",
+        "text": "yes plus a column for whether they can open (need a key holder at 5:30)"
+      },
+      {
+        "role": "assistant",
+        "text": "Here's a template with a key-holder column and a check that flags any store without a key holder on an opening shift."
+      },
+      {
+        "role": "user",
+        "text": "nice. I'll pilot it in the Dampoort store first"
+      },
+      {
+        "role": "assistant",
+        "text": "Good plan. Send me their first week once it's filled in and I'll check it for gaps."
+      }
+    ],
+    "label": true,
+    "why": "User revealed their role and company: new head of operations at a 14-store bakery chain."
+  },
+  {
+    "id": "rv-002",
+    "messages": [
+      {
+        "role": "user",
+        "text": "TypeError: Cannot read properties of undefined (reading 'map') in OrderList.jsx"
+      },
+      {
+        "role": "assistant",
+        "text": "That usually means the orders prop is undefined on the first render. How is it fetched?"
+      },
+      {
+        "role": "user",
+        "text": "useEffect with fetch, then setOrders"
+      },
+      {
+        "role": "assistant",
+        "text": "Initialise the state with an empty array: useState([]). Before the fetch resolves, orders is undefined otherwise."
+      },
+      {
+        "role": "user",
+        "text": "it was useState() yeah. fixed"
+      },
+      {
+        "role": "assistant",
+        "text": "Good. You may also want a loading state so the list doesn't flash empty."
+      },
+      {
+        "role": "user",
+        "text": "how would that look"
+      },
+      {
+        "role": "assistant",
+        "text": "Add const [loading, setLoading] = useState(true), set it to false after setOrders, and render a spinner while it's true."
+      },
+      {
+        "role": "user",
+        "text": "done. now the spinner never goes away when the fetch fails"
+      },
+      {
+        "role": "assistant",
+        "text": "Move setLoading(false) into a finally block so it runs on success and on error."
+      },
+      {
+        "role": "user",
+        "text": "and show an error message?"
+      },
+      {
+        "role": "assistant",
+        "text": "Keep an error state: catch the error, setError(err.message), and render it instead of the list when it is set."
+      },
+      {
+        "role": "user",
+        "text": "done, thanks"
+      },
+      {
+        "role": "assistant",
+        "text": "You're welcome."
+      }
+    ],
+    "label": false,
+    "why": "Pure debugging of a JavaScript error; nothing about the user."
+  },
+  {
+    "id": "rv-003",
+    "messages": [
+      {
+        "role": "user",
+        "text": "write release notes for v2.3: faster sync, dark mode, fixed the export crash"
+      },
+      {
+        "role": "assistant",
+        "text": "Great question! Here are your release notes:\n\nv2.3 is here :rocket: - Sync is now up to 3x faster :zap: - Dark mode has arrived :sparkles: - Fixed a crash when exporting to CSV"
+      },
+      {
+        "role": "user",
+        "text": "ugh. no emojis, ever, in anything you write for me. and stop opening with 'great question'"
+      },
+      {
+        "role": "assistant",
+        "text": "Understood. Revised:\n\nv2.3 makes sync up to three times faster, adds dark mode, and fixes a crash when exporting to CSV."
+      },
+      {
+        "role": "user",
+        "text": "better. a bit more detail on the sync change?"
+      },
+      {
+        "role": "assistant",
+        "text": "Sync now sends only changed records instead of the full dataset, so large workspaces finish in seconds rather than minutes."
+      }
+    ],
+    "label": true,
+    "why": "User gave a standing style instruction: no emojis anywhere and no stock openers."
+  },
+  {
+    "id": "rv-004",
+    "messages": [
+      {
+        "role": "user",
+        "text": "morning"
+      },
+      {
+        "role": "assistant",
+        "text": "Good morning. How's it going?"
+      },
+      {
+        "role": "user",
+        "text": "tired, slept badly. it's grey and rainy here too"
+      },
+      {
+        "role": "assistant",
+        "text": "Sorry to hear that. A slow start with an easy task might help."
+      },
+      {
+        "role": "user",
+        "text": "yeah. any fun fact to wake me up?"
+      },
+      {
+        "role": "assistant",
+        "text": "Octopuses have three hearts, and two of them stop beating while they swim."
+      },
+      {
+        "role": "user",
+        "text": "ha, ok that's weird enough. thanks"
+      }
+    ],
+    "label": false,
+    "why": "Small talk and a passing mood; nothing lasting."
+  },
+  {
+    "id": "rv-005",
+    "messages": [
+      {
+        "role": "user",
+        "text": "ssh to one of my boxes keeps timing out after the key rotation"
+      },
+      {
+        "role": "assistant",
+        "text": "Where do the servers run, and how are the keys distributed?"
+      },
+      {
+        "role": "user",
+        "text": "all my servers are on Hetzner, everything is managed with Ansible from the infra-live repo. the rotation playbook pushed the new keys yesterday"
+      },
+      {
+        "role": "assistant",
+        "text": "Then check whether the playbook replaced authorized_keys on that host. Run ssh -v and see which key it offers."
+      },
+      {
+        "role": "user",
+        "text": "it offers the old key. my laptop is NixOS and I guess the agent still has the old one loaded"
+      },
+      {
+        "role": "assistant",
+        "text": "Likely. Remove the old identity with ssh-add -d and add the new one, or update the identity file in your NixOS ssh config so it survives a rebuild."
+      },
+      {
+        "role": "user",
+        "text": "fixed, it was the nix config"
+      },
+      {
+        "role": "assistant",
+        "text": "Good. Worth adding the key path to the infra-live README so the next rotation doesn't trip on it."
+      },
+      {
+        "role": "user",
+        "text": "can the playbook also remove the old key from the agent on my laptop?"
+      },
+      {
+        "role": "assistant",
+        "text": "Not cleanly, since the laptop isn't in the inventory. Better to make the playbook print a reminder, or manage the key path in your NixOS config only."
+      },
+      {
+        "role": "user",
+        "text": "ok, the nix config is the source of truth for my machines anyway"
+      },
+      {
+        "role": "assistant",
+        "text": "Then point the identity file at a stable path and have the rotation playbook write the new key there."
+      }
+    ],
+    "label": true,
+    "why": "User described their stable infrastructure: Hetzner servers, Ansible repo, NixOS at home."
+  },
+  {
+    "id": "rv-006",
+    "messages": [
+      {
+        "role": "user",
+        "text": "here's my blog intro, tighten it:\n\nIn today's fast-moving world, teams are always looking for ways to ship faster. In this post I'll talk about how we cut our deploy time in half."
+      },
+      {
+        "role": "assistant",
+        "text": "Tightened: 'We cut our deploy time in half. Here's how.'"
+      },
+      {
+        "role": "user",
+        "text": "too short, keep a bit of setup"
+      },
+      {
+        "role": "assistant",
+        "text": "'Our deploys took 40 minutes, and engineers stopped shipping small fixes because of it. Here's how we got that down to 18.'"
+      },
+      {
+        "role": "user",
+        "text": "good. make this paragraph shorter too: 'The biggest change was caching our dependencies between builds, which we had never done before because nobody owned the CI config.'"
+      },
+      {
+        "role": "assistant",
+        "text": "'The biggest win was caching dependencies between builds. Nobody owned the CI config, so nobody had tried.'"
+      },
+      {
+        "role": "user",
+        "text": "perfect"
+      }
+    ],
+    "label": false,
+    "why": "Editing a blog intro with one-off requests scoped to this draft."
+  },
+  {
+    "id": "rv-007",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I'm going hiking in the Dolomites next month, what should go in a first aid kit?"
+      },
+      {
+        "role": "assistant",
+        "text": "Blister plasters, an elastic bandage, painkillers, antiseptic wipes, tweezers, a foil blanket and any personal medication."
+      },
+      {
+        "role": "user",
+        "text": "remember that I'm allergic to penicillin, in case I ask you about meds later"
+      },
+      {
+        "role": "assistant",
+        "text": "Noted: penicillin allergy. If you ever ask about antibiotics I'll keep it in mind."
+      },
+      {
+        "role": "user",
+        "text": "thanks. what about altitude sickness, the huts are around 2500m"
+      },
+      {
+        "role": "assistant",
+        "text": "At 2,500 m most people are fine. Ascend gradually, drink plenty and descend if you get a strong headache or nausea."
+      }
+    ],
+    "label": true,
+    "why": "User explicitly asked the assistant to remember a medical fact."
+  },
+  {
+    "id": "rv-008",
+    "messages": [
+      {
+        "role": "user",
+        "text": "how does compound interest work"
+      },
+      {
+        "role": "assistant",
+        "text": "You earn interest on the original amount and on the interest already added, so growth speeds up over time."
+      },
+      {
+        "role": "user",
+        "text": "so 1000 at 5% for 10 years?"
+      },
+      {
+        "role": "assistant",
+        "text": "About 1,629: 1000 x 1.05^10."
+      },
+      {
+        "role": "user",
+        "text": "and if it compounds monthly?"
+      },
+      {
+        "role": "assistant",
+        "text": "About 1,647: 1000 x (1 + 0.05/12)^120."
+      },
+      {
+        "role": "user",
+        "text": "small difference then"
+      },
+      {
+        "role": "assistant",
+        "text": "Yes. Over short periods and low rates the compounding frequency matters little."
+      }
+    ],
+    "label": false,
+    "why": "General knowledge questions answered; no personal information."
+  },
+  {
+    "id": "rv-009",
+    "messages": [
+      {
+        "role": "user",
+        "text": "help me write the project update for this week"
+      },
+      {
+        "role": "assistant",
+        "text": "Who is it for, and what format do they expect?"
+      },
+      {
+        "role": "user",
+        "text": "two people. my manager Priya likes very short updates, three sentences max. my skip-level Tom always wants the numbers first"
+      },
+      {
+        "role": "assistant",
+        "text": "Then two versions: three sentences for Priya, and for Tom one that opens with the metrics. What happened this week?"
+      },
+      {
+        "role": "user",
+        "text": "migration 80% done, one week slip because of the payment provider, costs on budget"
+      },
+      {
+        "role": "assistant",
+        "text": "Priya: Migration is 80% done. We slipped one week because of the payment provider. Costs are on budget.\n\nTom: 80% migrated, +1 week, 0% over budget. The slip comes from the payment provider's API change."
+      },
+      {
+        "role": "user",
+        "text": "perfect"
+      }
+    ],
+    "label": true,
+    "why": "User described the people they report to and how each likes updates."
+  },
+  {
+    "id": "rv-010",
+    "messages": [
+      {
+        "role": "user",
+        "text": "I need revenue per product category for last quarter, tables are orders, order_items, products"
+      },
+      {
+        "role": "assistant",
+        "text": "Something like: SELECT p.category, SUM(oi.quantity * oi.unit_price) FROM order_items oi JOIN orders o ON o.id = oi.order_id JOIN products p ON p.id = oi.product_id WHERE o.created_at >= '2026-07-01' AND o.created_at < '2026-10-01' GROUP BY p.category;"
+      },
+      {
+        "role": "user",
+        "text": "need to exclude cancelled orders"
+      },
+      {
+        "role": "assistant",
+        "text": "Add AND o.status <> 'cancelled' to the WHERE clause."
+      },
+      {
+        "role": "user",
+        "text": "and sort by revenue"
+      },
+      {
+        "role": "assistant",
+        "text": "Alias the sum as revenue and add ORDER BY revenue DESC."
+      },
+      {
+        "role": "user",
+        "text": "works, thanks"
+      }
+    ],
+    "label": false,
+    "why": "Writing a one-off SQL query for a report."
+  },
+  {
+    "id": "rv-011",
+    "messages": [
+      {
+        "role": "user",
+        "text": "can you explain what a reverse proxy does"
+      },
+      {
+        "role": "assistant",
+        "text": "A reverse proxy sits in front of your servers and receives requests on their behalf, then forwards them to the right backend. It often handles TLS, caching and load balancing."
+      },
+      {
+        "role": "user",
+        "text": "thanks. btw, reply in Dutch from now on unless it's code"
+      },
+      {
+        "role": "assistant",
+        "text": "Prima, vanaf nu antwoord ik in het Nederlands, behalve als het om code gaat."
+      },
+      {
+        "role": "user",
+        "text": "top. wat is dan het verschil met een load balancer?"
+      },
+      {
+        "role": "assistant",
+        "text": "Een load balancer verdeelt verkeer over meerdere servers. Veel reverse proxies doen dat ook, maar een reverse proxy kan daarnaast TLS afhandelen, cachen en requests herschrijven."
+      }
+    ],
+    "label": true,
+    "why": "User set a lasting language preference for future replies."
+  },
+  {
+    "id": "rv-012",
+    "messages": [
+      {
+        "role": "user",
+        "text": "fastest way from Schiphol to Amsterdam Centraal?"
+      },
+      {
+        "role": "assistant",
+        "text": "The direct train: about 15 minutes, several per hour from the station under the arrivals hall."
+      },
+      {
+        "role": "user",
+        "text": "do I need a ticket or can I tap my card?"
+      },
+      {
+        "role": "assistant",
+        "text": "You can check in and out with a contactless bank card or phone at the gates."
+      },
+      {
+        "role": "user",
+        "text": "and at night?"
+      },
+      {
+        "role": "assistant",
+        "text": "Night trains run roughly hourly between Schiphol and Centraal."
+      }
+    ],
+    "label": false,
+    "why": "A one-off travel question."
+  },
+  {
+    "id": "rv-013",
+    "messages": [
+      {
+        "role": "user",
+        "text": "how do I make a subcommand optional with clap derive?"
+      },
+      {
+        "role": "assistant",
+        "text": "Wrap the subcommand field in Option: `command: Option<Commands>`. When it is None, run your default behaviour."
+      },
+      {
+        "role": "user",
+        "text": "cool. context: this is for tidy-tabs, my rust CLI for cleaning CSVs. it's at about 400 stars now so I don't want to break the existing interface"
+      },
+      {
+        "role": "assistant",
+        "text": "Then keep the current flags on the top-level struct and add the subcommands alongside them, so existing invocations still parse."
+      },
+      {
+        "role": "user",
+        "text": "will that conflict with positional args?"
+      },
+      {
+        "role": "assistant",
+        "text": "It can. If the top level takes a positional file path, set `args_conflicts_with_subcommands = true` so clap knows which form is meant."
+      },
+      {
+        "role": "user",
+        "text": "makes sense, thanks"
+      },
+      {
+        "role": "assistant",
+        "text": "Add a test that runs the old invocation so a future change can't silently break it."
+      }
+    ],
+    "label": true,
+    "why": "User described a lasting side project while asking a coding question."
+  },
+  {
+    "id": "rv-014",
+    "messages": [
+      {
+        "role": "user",
+        "text": "recipe for a simple dal?"
+      },
+      {
+        "role": "assistant",
+        "text": "Red lentils, onion, garlic, ginger, turmeric, cumin, a tin of tomatoes and some stock. Simmer about 25 minutes."
+      },
+      {
+        "role": "user",
+        "text": "make it for 6 people this time"
+      },
+      {
+        "role": "assistant",
+        "text": "Use 450 g lentils, 2 onions, 4 garlic cloves, a thumb of ginger, 2 tins of tomatoes and about 1.5 l stock."
+      },
+      {
+        "role": "user",
+        "text": "can I do it in a slow cooker?"
+      },
+      {
+        "role": "assistant",
+        "text": "Yes, about 4 hours on low. Fry the onion and spices first for more flavour."
+      },
+      {
+        "role": "user",
+        "text": "great"
+      }
+    ],
+    "label": false,
+    "why": "Recipe help scaled for one dinner."
+  },
+  {
+    "id": "rv-015",
+    "messages": [
+      {
+        "role": "user",
+        "text": "can you draft an intro email to the new design agency"
+      },
+      {
+        "role": "assistant",
+        "text": "Sure. Should I sign it as Samantha?"
+      },
+      {
+        "role": "user",
+        "text": "just so you know, I go by Sam, not Samantha. and they/them please"
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks for telling me, Sam. Here's a draft signed 'Sam'."
+      },
+      {
+        "role": "user",
+        "text": "looks good, maybe less formal"
+      },
+      {
+        "role": "assistant",
+        "text": "Here's a lighter version that opens with a quick hello and keeps it to four lines."
+      }
+    ],
+    "label": true,
+    "why": "User corrected how they want to be addressed."
+  },
+  {
+    "id": "rv-016",
+    "messages": [
+      {
+        "role": "user",
+        "text": "my api container can't reach postgres in compose, connection refused on localhost:5432"
+      },
+      {
+        "role": "assistant",
+        "text": "Inside a container, localhost is the container itself. Use the service name, for example db:5432."
+      },
+      {
+        "role": "user",
+        "text": "this time just give me the commands, no explanation"
+      },
+      {
+        "role": "assistant",
+        "text": "docker compose down\nsed -i 's/localhost:5432/db:5432/' .env\ndocker compose up -d"
+      },
+      {
+        "role": "user",
+        "text": "still refused"
+      },
+      {
+        "role": "assistant",
+        "text": "docker compose logs db | tail -20"
+      },
+      {
+        "role": "user",
+        "text": "it says postgres is still initializing"
+      },
+      {
+        "role": "assistant",
+        "text": "Add a healthcheck on db and depends_on: condition: service_healthy for api, then docker compose up -d."
+      },
+      {
+        "role": "user",
+        "text": "works now. how do I see which containers are healthy"
+      },
+      {
+        "role": "assistant",
+        "text": "docker compose ps"
+      },
+      {
+        "role": "user",
+        "text": "db shows healthy, api shows running. fine?"
+      },
+      {
+        "role": "assistant",
+        "text": "Yes. api has no healthcheck, so it only reports running."
+      }
+    ],
+    "label": false,
+    "why": "Docker networking fix with a style request limited to this exchange."
+  },
+  {
+    "id": "rv-017",
+    "messages": [
+      {
+        "role": "user",
+        "text": "create a ticket for the login redirect bug"
+      },
+      {
+        "role": "assistant",
+        "text": "Should I create it in Jira, like last time?"
+      },
+      {
+        "role": "user",
+        "text": "no, we moved from Jira to Linear last month. all tickets live in Linear now, team key is NW"
+      },
+      {
+        "role": "assistant",
+        "text": "Got it. Creating it in Linear under NW: 'Login redirects to a blank page after SSO'. Priority?"
+      },
+      {
+        "role": "user",
+        "text": "high"
+      },
+      {
+        "role": "assistant",
+        "text": "Created NW-412 with high priority."
+      },
+      {
+        "role": "user",
+        "text": "assign it to Hylke"
+      },
+      {
+        "role": "assistant",
+        "text": "Assigned NW-412 to Hylke."
+      }
+    ],
+    "label": true,
+    "why": "User stated a stable change in tooling: the team moved from Jira to Linear."
+  },
+  {
+    "id": "rv-018",
+    "messages": [
+      {
+        "role": "user",
+        "text": "need a name for our hackathon project, it's a slack bot that summarizes long threads"
+      },
+      {
+        "role": "assistant",
+        "text": "A few options: Threadbare, TL;DR Bot, Gist, Unravel, Skimmer."
+      },
+      {
+        "role": "user",
+        "text": "something less obvious"
+      },
+      {
+        "role": "assistant",
+        "text": "Cliffnotes, Sieve, Precis, Ferret, Tidewater."
+      },
+      {
+        "role": "user",
+        "text": "Sieve is good"
+      },
+      {
+        "role": "assistant",
+        "text": "Sieve it is. Want a one-line tagline for the demo slide?"
+      },
+      {
+        "role": "user",
+        "text": "sure"
+      },
+      {
+        "role": "assistant",
+        "text": "'Sieve: read the thread without reading the thread.'"
+      }
+    ],
+    "label": false,
+    "why": "Brainstorming a name for a one-off hackathon project."
+  },
+  {
+    "id": "rv-019",
+    "messages": [
+      {
+        "role": "user",
+        "text": "summarize what came in on the support queue while I was off"
+      },
+      {
+        "role": "assistant",
+        "text": "Thirty-two tickets: most were password resets, three billing disputes, and one outage report from Tuesday that is already resolved."
+      },
+      {
+        "role": "user",
+        "text": "ok. heads up, I'm on parental leave until mid January, so only ping me for really urgent stuff. Hylke covers the rest"
+      },
+      {
+        "role": "assistant",
+        "text": "Understood. Until mid January I'll route anything non-urgent to Hylke and only flag outages or legal issues to you."
+      },
+      {
+        "role": "user",
+        "text": "good. anything urgent in there now?"
+      },
+      {
+        "role": "assistant",
+        "text": "Only the billing dispute from Kestrel Legal, which mentions a chargeback deadline on Friday."
+      },
+      {
+        "role": "user",
+        "text": "send that one to Hylke too"
+      },
+      {
+        "role": "assistant",
+        "text": "Forwarded it to Hylke with the deadline highlighted."
+      }
+    ],
+    "label": true,
+    "why": "User shared a months-long circumstance and how to handle contact during it."
+  },
+  {
+    "id": "rv-020",
+    "messages": [
+      {
+        "role": "user",
+        "text": "translate to french: 'Your order has shipped and should arrive within three working days.'"
+      },
+      {
+        "role": "assistant",
+        "text": "'Votre commande a été expédiée et devrait arriver sous trois jours ouvrés.'"
+      },
+      {
+        "role": "user",
+        "text": "is 'ouvrés' or 'ouvrables' better?"
+      },
+      {
+        "role": "assistant",
+        "text": "'Ouvrés' are the days a business actually works, usually Monday to Friday. 'Ouvrables' includes Saturday. For shipping, 'ouvrés' is the usual choice."
+      },
+      {
+        "role": "user",
+        "text": "ok keep ouvrés"
+      },
+      {
+        "role": "assistant",
+        "text": "Done, the translation stays as it is."
+      }
+    ],
+    "label": false,
+    "why": "Translating a paragraph; questions about word choice only."
+  },
+  {
+    "id": "rv-021",
+    "messages": [
+      {
+        "role": "user",
+        "text": "add pagination to the /invoices endpoint"
+      },
+      {
+        "role": "assistant",
+        "text": "Done: added limit and cursor parameters and updated the handler."
+      },
+      {
+        "role": "user",
+        "text": "did you run the tests?"
+      },
+      {
+        "role": "assistant",
+        "text": "Not yet. Running them now: 2 failures in test_invoices.py, both expect the old response shape."
+      },
+      {
+        "role": "user",
+        "text": "in general, always run the tests before you tell me something is done. every time"
+      },
+      {
+        "role": "assistant",
+        "text": "Will do. I updated the two tests for the new shape and the full suite passes now."
+      },
+      {
+        "role": "user",
+        "text": "ok thanks"
+      }
+    ],
+    "label": true,
+    "why": "User gave a standing instruction about verifying work before reporting it done."
+  },
+  {
+    "id": "rv-022",
+    "messages": [
+      {
+        "role": "user",
+        "text": "summarize this article about the new EU battery regulation"
+      },
+      {
+        "role": "assistant",
+        "text": "It requires a digital battery passport from 2027, sets minimum recycled content for cobalt, lithium and nickel, and makes portable batteries user-replaceable by 2027."
+      },
+      {
+        "role": "user",
+        "text": "what counts as portable?"
+      },
+      {
+        "role": "assistant",
+        "text": "Sealed batteries under 5 kg that aren't designed for industrial use or electric vehicles, such as phone and laptop batteries."
+      },
+      {
+        "role": "user",
+        "text": "does it apply to e-bikes?"
+      },
+      {
+        "role": "assistant",
+        "text": "E-bike batteries fall under 'light means of transport' batteries, a separate category with its own collection targets."
+      },
+      {
+        "role": "user",
+        "text": "got it"
+      }
+    ],
+    "label": false,
+    "why": "Questions about an article summary; no personal content."
+  },
+  {
+    "id": "rv-023",
+    "messages": [
+      {
+        "role": "user",
+        "text": "find a free slot next week for a call with the accountant"
+      },
+      {
+        "role": "assistant",
+        "text": "I see your Google Calendar is empty next week. Is that right?"
+      },
+      {
+        "role": "user",
+        "text": "no, my work calendar and email are in Outlook, not Google. the google account is old. personal stuff is in iCloud"
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks. Checking Outlook instead: you're free Tuesday 10:00-12:00 and Thursday after 14:00."
+      },
+      {
+        "role": "user",
+        "text": "thursday 14:30"
+      },
+      {
+        "role": "assistant",
+        "text": "Sent an invite for Thursday 14:30 from your Outlook calendar."
+      }
+    ],
+    "label": true,
+    "why": "User explained which accounts hold their calendar and mail."
+  },
+  {
+    "id": "rv-024",
+    "messages": [
+      {
+        "role": "user",
+        "text": "on my phone on the train, keep it short for now"
+      },
+      {
+        "role": "assistant",
+        "text": "Sure, short answers."
+      },
+      {
+        "role": "user",
+        "text": "undo last commit but keep the changes?"
+      },
+      {
+        "role": "assistant",
+        "text": "git reset --soft HEAD~1"
+      },
+      {
+        "role": "user",
+        "text": "and if I already pushed?"
+      },
+      {
+        "role": "assistant",
+        "text": "git revert HEAD instead, then push."
+      },
+      {
+        "role": "user",
+        "text": "ty"
+      }
+    ],
+    "label": false,
+    "why": "A temporary situation (on a phone, on a train) and a quick git question."
+  },
+  {
+    "id": "rv-025",
+    "messages": [
+      {
+        "role": "user",
+        "text": "my pandas groupby gives NaN for some students"
+      },
+      {
+        "role": "assistant",
+        "text": "Can you share the code and a few rows of the data?"
+      },
+      {
+        "role": "user",
+        "text": "df.groupby('student')['score'].mean() and some scores are the string 'absent'"
+      },
+      {
+        "role": "assistant",
+        "text": "Those strings make the column an object dtype. Convert with pd.to_numeric(df['score'], errors='coerce') before grouping."
+      },
+      {
+        "role": "user",
+        "text": "that works. I teach high school chemistry and do this every term for grading, so I'll be back with more of these"
+      },
+      {
+        "role": "assistant",
+        "text": "Happy to help. If the sheet layout stays the same each term, a small script could do the whole grading pass in one go."
+      },
+      {
+        "role": "user",
+        "text": "actually can we start now? columns are student, test, score, max_score"
+      },
+      {
+        "role": "assistant",
+        "text": "Sure. Compute a percentage per row with score / max_score, then average per student: df.assign(pct=df.score / df.max_score).groupby('student').pct.mean()."
+      },
+      {
+        "role": "user",
+        "text": "some tests count double though"
+      },
+      {
+        "role": "assistant",
+        "text": "Add a weight column and use a weighted mean: (pct * weight).sum() / weight.sum() per student, via groupby().apply()."
+      },
+      {
+        "role": "user",
+        "text": "works. and round to one decimal"
+      },
+      {
+        "role": "assistant",
+        "text": "Wrap it in round(..., 1), or call .round(1) on the resulting series."
+      }
+    ],
+    "label": true,
+    "why": "User mentioned their profession in passing during a data task."
+  },
+  {
+    "id": "rv-026",
+    "messages": [
+      {
+        "role": "user",
+        "text": "quick sanity check: derivative of x^2 * sin(x)?"
+      },
+      {
+        "role": "assistant",
+        "text": "Product rule: 2x sin(x) + x^2 cos(x)."
+      },
+      {
+        "role": "user",
+        "text": "and of e^(3x)?"
+      },
+      {
+        "role": "assistant",
+        "text": "3e^(3x)."
+      },
+      {
+        "role": "user",
+        "text": "ok, and the integral of 1/x?"
+      },
+      {
+        "role": "assistant",
+        "text": "ln|x| + C."
+      }
+    ],
+    "label": false,
+    "why": "A calculus sanity check; no personal context."
+  },
+  {
+    "id": "rv-027",
+    "messages": [
+      {
+        "role": "user",
+        "text": "how much should I set aside for tax on my freelance income this year?"
+      },
+      {
+        "role": "assistant",
+        "text": "In the US, a common rule of thumb is 25-30% of net self-employment income..."
+      },
+      {
+        "role": "user",
+        "text": "I'm in Australia. use AUD and the Australian tax year (July to June) for anything money related"
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks. For a sole trader in Australia, setting aside around 30% of profit in AUD is a common starting point, before the Medicare levy and any PAYG instalments."
+      },
+      {
+        "role": "user",
+        "text": "what's PAYG again"
+      },
+      {
+        "role": "assistant",
+        "text": "Pay As You Go instalments: quarterly prepayments of income tax that the ATO sets once your business income passes a threshold."
+      }
+    ],
+    "label": true,
+    "why": "User corrected a location assumption and set lasting conventions (currency, tax year)."
+  },
+  {
+    "id": "rv-028",
+    "messages": [
+      {
+        "role": "user",
+        "text": "review this:\n\ndef proc(d):\n    r = []\n    for k in d:\n        if d[k] > 0:\n            r.append(k)\n    return r"
+      },
+      {
+        "role": "assistant",
+        "text": "It works, but the names hide the intent. Something like: def positive_keys(counts): return [key for key, value in counts.items() if value > 0]"
+      },
+      {
+        "role": "user",
+        "text": "is items() faster than indexing?"
+      },
+      {
+        "role": "assistant",
+        "text": "Slightly, since it avoids a second lookup per key, but the main gain is readability."
+      },
+      {
+        "role": "user",
+        "text": "ok and should I add type hints"
+      },
+      {
+        "role": "assistant",
+        "text": "Yes: def positive_keys(counts: dict[str, int]) -> list[str]."
+      },
+      {
+        "role": "user",
+        "text": "done"
+      },
+      {
+        "role": "assistant",
+        "text": "Looks good."
+      }
+    ],
+    "label": false,
+    "why": "Reviewing a code snippet and naming; task work only."
+  },
+  {
+    "id": "rv-029",
+    "messages": [
+      {
+        "role": "user",
+        "text": "the staging api returns 401 again"
+      },
+      {
+        "role": "assistant",
+        "text": "When did it start? Did anything change in the deploy?"
+      },
+      {
+        "role": "user",
+        "text": "started this morning. oh wait, it's the 1st"
+      },
+      {
+        "role": "assistant",
+        "text": "Does something rotate at the start of the month?"
+      },
+      {
+        "role": "user",
+        "text": "yes the staging api key rotates on the 1st of every month. note that, so if auth breaks early in the month that's the first thing to check"
+      },
+      {
+        "role": "assistant",
+        "text": "Noted. I'll check for the monthly key rotation first whenever staging auth fails early in a month. Want me to fetch the new key from the vault now?"
+      },
+      {
+        "role": "user",
+        "text": "yes please"
+      },
+      {
+        "role": "assistant",
+        "text": "Updated the staging key; requests return 200 again."
+      }
+    ],
+    "label": true,
+    "why": "User asked the assistant to note a recurring environment fact."
+  },
+  {
+    "id": "rv-030",
+    "messages": [
+      {
+        "role": "user",
+        "text": "ugh mondays. the cron job didn't run again"
+      },
+      {
+        "role": "assistant",
+        "text": "Let's look. What does the schedule line say, and is there anything in the logs?"
+      },
+      {
+        "role": "user",
+        "text": "0 9 * * 1-5 and the logs are empty"
+      },
+      {
+        "role": "assistant",
+        "text": "The schedule is fine. Empty logs usually mean the job never started: check that the cron service is running and that the script is executable."
+      },
+      {
+        "role": "user",
+        "text": "it lost the executable bit after the last deploy"
+      },
+      {
+        "role": "assistant",
+        "text": "chmod +x on the script fixes it now. To keep it fixed, set the mode in the deploy step."
+      },
+      {
+        "role": "user",
+        "text": "done, thanks. what a day"
+      },
+      {
+        "role": "assistant",
+        "text": "Glad it's sorted."
+      }
+    ],
+    "label": false,
+    "why": "Venting about a bug, then the fix; no lasting information."
+  }
+]

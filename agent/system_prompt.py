@@ -298,6 +298,10 @@ def _tool_guidance_block(agent: Any) -> Optional[str]:
     return " ".join(g for g in tool_guidance if g) or None
 
 
+# The hermes-agent row in a full index ("- hermes-agent: ...") or in a names-only line ("cat: a, hermes-agent").
+_HERMES_AGENT_SKILL_LISTED = re.compile(r"(?:- |: |, )hermes-agent(?=:|,|\n|$)", re.MULTILINE)
+
+
 def _skills_prompt(agent: Any) -> str:
     """Skills index (empty without skills tools).  Focus mode demotes non-coding
     categories to names-only — never hidden, every name stays visible."""
@@ -310,8 +314,10 @@ def _skills_prompt(agent: Any) -> str:
         _compact_cats = coding_compact_skill_categories(platform=agent.platform, cwd=resolve_context_cwd())
     except Exception:
         _compact_cats = frozenset()
+    from agent.relevance_skills import selection_index_mode
     return _pb.build_skills_system_prompt(available_tools=agent.valid_tool_names, available_toolsets=avail_toolsets,
-                                         compact_categories=_compact_cats or None, skills_dir_override=_agent_skills_dir(agent))
+                                         compact_categories=_compact_cats or None, skills_dir_override=_agent_skills_dir(agent),
+                                         selection_index=selection_index_mode(agent))
 
 
 def _auto_load_parts(agent: Any) -> List[str]:
@@ -753,7 +759,7 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None) 
     skills_prompt = _skills_prompt(agent)
     # Skill-pointer variant requires BOTH skill_view AND the hermes-agent skill
     # in the rendered index (pure string check — inherits the index's stability).
-    if "skill_view" in (agent.valid_tool_names or set()) and "- hermes-agent:" in skills_prompt:
+    if "skill_view" in (agent.valid_tool_names or set()) and _HERMES_AGENT_SKILL_LISTED.search(skills_prompt):
         stable_parts[_help_guidance_slot] = HERMES_AGENT_HELP_GUIDANCE
     stable_parts.extend(_alibaba_identity_part(agent))
     # Pinned skills are per-agent constants (resolved once), so they live in the stable prefix.

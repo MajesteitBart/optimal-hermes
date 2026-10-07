@@ -332,12 +332,18 @@ def _build_skill_message(
     user_instruction: str = "",
     runtime_note: str = "",
     session_id: str | None = None,
+    *,
+    inline_shell: bool = True,
 ) -> str:
-    """Format a loaded skill into a user/system message payload."""
+    """Format a loaded skill into a user/system message payload. ``inline_shell=False`` never runs
+    !`cmd` snippets, whatever the config says (skills attached automatically, not invoked)."""
     from tools.skills_tool import _skills_dir
+    skills_cfg = _load_skills_config()
+    if not inline_shell:
+        skills_cfg = {**skills_cfg, "inline_shell": False}
     # Preprocess first so downstream blocks see the expanded content.
     content = preprocess_skill_content(
-        str(loaded_skill.get("content") or ""), skill_dir, session_id, skills_cfg=_load_skills_config(),
+        str(loaded_skill.get("content") or ""), skill_dir, session_id, skills_cfg=skills_cfg,
     )
     parts = [activation_note, "", content.strip()]
     # Absolute skill dir lets the agent run bundled scripts without a skill_view() round-trip.

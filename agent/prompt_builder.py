@@ -1330,6 +1330,7 @@ def _current_session_platform_hint() -> str:
 def build_skills_system_prompt(
     available_tools: "set[str] | None" = None, available_toolsets: "set[str] | None" = None,
     compact_categories: "frozenset[str] | None" = None, skills_dir_override: "Path | None" = None,
+    selection_index: "str | None" = None,
 ) -> str:
     """Compact skill index for the system prompt.
 
@@ -1338,6 +1339,8 @@ def build_skills_system_prompt(
     ``compact_categories`` (coding posture) demotes categories to a names-only line — nothing is ever hidden.
     ``skills_dir_override`` makes home resolution EXPLICIT: a build thread that never bound the HERMES_HOME
     ContextVar would otherwise leak the default profile's skills into a bot's prompt.
+    ``selection_index`` (``full``/``names``/``none``) renders the variant used while ``skills.selection``
+    attaches skills per message (``agent.relevance_skills``).
     """
     _home_token = None
     if skills_dir_override is not None:
@@ -1352,7 +1355,7 @@ def build_skills_system_prompt(
         if not skills_dir.exists() and not extra_roots:
             return ""
         return _build_skills_system_prompt_inner(
-            skills_dir, extra_roots, available_tools, available_toolsets, compact_categories)
+            skills_dir, extra_roots, available_tools, available_toolsets, compact_categories, selection_index)
     finally:
         if _home_token is not None:
             reset_hermes_home_override(_home_token)
@@ -1399,14 +1402,63 @@ def _label_visible_entries(visible_entries: list[dict], skills_by_category: dict
         skills_by_category.setdefault(category, []).append((entry["load_name"], desc))
 
 
+# Marks a system prompt built for per-message selection; agent.relevance_skills reads it so a resumed
+# session keeps the mode its restored prompt was built with.
+SELECTION_PROMPT_MARKER = "Skills that look relevant to a message are attached to it in a <selected-skills> block."
+_SELECTION_SKILLS_HEADER = (
+    "## Skills\n" + SELECTION_PROMPT_MARKER + " Apply them where they fit and ignore the ones that do not. "
+    "When a task needs a skill that was not attached, load it with skill_view(name)."
+)
+
+
+def _render_selection_index(
+    skills_by_category: dict[str, list[tuple[str, str]]], category_descriptions: dict[str, str],
+    available_tools: "set[str] | None", mode: str, unloadable: "list[str]" = (),
+) -> str:
+    """The ## Skills block while ``skills.selection`` attaches skills per message: no "load anything
+    partially relevant" policy; the library is listed in full, by name only, or not at all."""
+    tools = available_tools if available_tools is not None else {"skills_list", "skill_manage"}
+    parts = [_SELECTION_SKILLS_HEADER]
+    if mode == "full":
+        lines = []
+        for category in sorted(skills_by_category):
+            cat_desc = category_descriptions.get(category, "")
+            lines.append(f"  {category}: {cat_desc}" if cat_desc else f"  {category}:")
+            first: dict[str, str] = {}
+            for n, d in sorted(skills_by_category[category], key=lambda x: x[0]):  # first entry per name wins
+                first.setdefault(n, d)
+            lines += [f"    - {n}: {d}" if d else f"    - {n}" for n, d in first.items()]
+        parts.append("<available_skills>\n" + "\n".join(lines) + "\n</available_skills>")
+    elif mode == "names":
+        lines = [f"  {category}: {', '.join(sorted({n for n, _ in entries}))}"
+                 for category, entries in sorted(skills_by_category.items())]
+        parts.append("Skills you can load:\n<available_skills>\n" + "\n".join(lines) + "\n</available_skills>")
+    else:
+        if "skills_list" in tools:
+            parts[0] += " skills_list shows the whole library."
+        if any(n == "hermes-agent" for entries in skills_by_category.values() for n, _ in entries):
+            parts.append("Configuring or troubleshooting Hermes itself: hermes-agent")
+    if unloadable:
+        parts.append(f"(A copy of {', '.join(unloadable)} is not loadable: it shares both its name and its path with "
+                     "a different skill in the same skills directory tier, so skill_view cannot load it. Rename one.)")
+    if "skill_manage" in tools:
+        parts.append("If a skill has wrong or missing steps, fix it with skill_manage(action='patch').")
+    return "\n\n".join(parts)
+
+
 def _render_skills_index(
     skills_by_category: dict[str, list[tuple[str, str]]], category_descriptions: dict[str, str],
     compact_categories: "frozenset[str] | None", available_tools: "set[str] | None", unloadable: "list[str]" = (),
+    selection_index: "str | None" = None,
 ) -> str:
     """Render the ## Skills block; "" when there is nothing to list. *unloadable* names (different skills
-    sharing a name AND relative path within one tier — one root or several) get a rename note instead of a row skill_view would refuse."""
+    sharing a name AND relative path within one tier — one root or several) get a rename note instead of a row skill_view would refuse.
+    *selection_index* (``full``/``names``/``none``) switches to the per-message selection variant."""
     if not skills_by_category:
         return ""
+    if selection_index:
+        return _render_selection_index(skills_by_category, category_descriptions, available_tools, selection_index,
+                                       unloadable)
     # Demoted categories collapse to one names-only line. NEVER drop entries — agent-created skills are the
     # model's project memory and it won't rediscover them via skills_list. Nested categories follow their parent.
     demoted = frozenset(cat for cat in skills_by_category if cat.split("/", 1)[0] in (compact_categories or frozenset()))
@@ -1472,6 +1524,7 @@ def _oneshot_prompt_variant() -> bool:
 def _build_skills_system_prompt_inner(
     skills_dir: "Path", extra_roots: "list[tuple[int, Path]]", available_tools: "set[str] | None",
     available_toolsets: "set[str] | None", compact_categories: "frozenset[str] | None",
+    selection_index: "str | None" = None,
 ) -> str:
     # The resolved platform is part of the key: per-platform disabled-skill lists need distinct cache entries.
     _platform_hint = _current_session_platform_hint()
@@ -1481,7 +1534,7 @@ def _build_skills_system_prompt_inner(
         tuple(sorted(str(t) for t in (available_tools or set()))),
         tuple(sorted(str(ts) for ts in (available_toolsets or set()))),
         _platform_hint, tuple(sorted(disabled)), tuple(sorted(compact_categories or ())),
-        _oneshot_prompt_variant(),
+        _oneshot_prompt_variant(), selection_index,
     )
     snapshot = _load_skills_snapshot(skills_dir)
     app_gated = snapshot is not None and any(
@@ -1543,7 +1596,8 @@ def _build_skills_system_prompt_inner(
             logger.debug("Could not write skills prompt snapshot: %s", e)
 
     unloadable = sorted({e["name"] for e in visible_entries if not e["load_name"]})
-    result = _render_skills_index(skills_by_category, category_descriptions, compact_categories, available_tools, unloadable)
+    result = _render_skills_index(skills_by_category, category_descriptions, compact_categories, available_tools,
+                                  unloadable, selection_index)
     with _SKILLS_PROMPT_CACHE_LOCK:
         _SKILLS_PROMPT_CACHE[cache_key] = result
         _SKILLS_PROMPT_CACHE.move_to_end(cache_key)

@@ -251,6 +251,7 @@ from tests._fixtures.live_system_guard import (  # noqa: F401 — _live_system_g
     _live_system_guard,
 )
 from tests._fixtures.platform_gating import _platforms_gate_reason, _reject_contradictory_platform_marks
+from tests._fixtures.typesafe_fake import fake_systemone  # noqa: F401 — the fixture registers here
 
 
 @pytest.fixture(autouse=True)

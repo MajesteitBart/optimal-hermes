@@ -1327,6 +1327,13 @@ _PROMPT_NAME_BY_SCOPE = {
 }
 
 
+def _review_would_start(agent: Any, review_run: Optional[_BackgroundReviewRun], task_cfg: Optional[Dict[str, Any]]) -> bool:
+    """_run_review_in_thread's startup fences, for callers that would otherwise do work before it."""
+    if review_run is not None and review_run.cancel_requested.is_set():
+        return False
+    return _parent_can_emit_tool_calls(agent) or bool(_resolve_review_runtime(agent, task_cfg).get("routed"))
+
+
 def spawn_background_review_thread(
     agent: Any, messages_snapshot: List[Dict], review_memory: bool = False,
     review_skills: bool = False, focus: Optional[str] = None,
@@ -1341,6 +1348,11 @@ def spawn_background_review_thread(
     memory operation set."""
     if task_cfg is None:
         task_cfg = _background_review_task_config()
+    # Called only once prepare_background_review_run() accepted the run: the review's signals restart here,
+    # not when it became due, so a refused or interrupted spawn keeps them for the next turn.
+    from agent.relevance_memory import review_scheduled
+
+    review_scheduled(agent, review_memory)
     # Per-agent overrides (agent._MEMORY_REVIEW_PROMPT etc.) keep working.
     name = _PROMPT_NAME_BY_SCOPE[(review_memory, review_skills)]
     prompt = getattr(agent, name, globals()[name])
@@ -1351,9 +1363,23 @@ def spawn_background_review_thread(
         )
 
     def _target() -> None:  # resolves _run_review_in_thread at call time (tests patch it)
+        run_memory, run_prompt = review_memory, prompt
+        # memory.review_gate: an automatic review whose recent turns hold nothing durable skips its
+        # memory half (checked here, on the review thread, so the user's turn never waits on it). A review
+        # that _run_review_in_thread would not start (cancelled, or a parent that cannot emit tool calls)
+        # goes straight there: it must not send the conversation out first.
+        if review_memory and not focus and not explicit and _review_would_start(agent, review_run, task_cfg):
+            from agent.relevance_memory import gate_memory_review
+
+            if not gate_memory_review(agent, messages_snapshot):
+                if not review_skills:
+                    finish_background_review_run(agent, review_run)
+                    return
+                run_memory = False
+                run_prompt = getattr(agent, "_SKILL_REVIEW_PROMPT", _SKILL_REVIEW_PROMPT)
         _run_review_in_thread(
-            agent, messages_snapshot, prompt, task_cfg=task_cfg, review_run=review_run,
-            review_memory=review_memory, explicit=explicit)
+            agent, messages_snapshot, run_prompt, task_cfg=task_cfg, review_run=review_run,
+            review_memory=run_memory, explicit=explicit)
 
     return _target, prompt
 

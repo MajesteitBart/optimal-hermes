@@ -153,6 +153,7 @@ For native Anthropic auth, Hermes prefers Claude Code's own credential files whe
 | `PARALLEL_API_KEY` | AI-native web search ([parallel.ai](https://parallel.ai/)) |
 | `FIRECRAWL_API_KEY` | Web scraping and cloud browser ([firecrawl.dev](https://firecrawl.dev/)) |
 | `FIRECRAWL_API_URL` | Custom Firecrawl API endpoint for self-hosted instances (optional) |
+| `TYPESAFE_API_KEY` | TypeSafe API key for [relevance scoring](../user-guide/features/context-relevance.md) with the Jev model: per-message skill selection and the memory gates ([console.typesafe.ai](https://console.typesafe.ai/keys)) |
 | `TAVILY_API_KEY` | Optional Tavily API key for higher search/extract limits. After selecting Tavily as the web backend, keyless access works without it ([app.tavily.com](https://app.tavily.com/home), [keyless docs](https://docs.tavily.com/documentation/keyless)) |
 | `TAVILY_BASE_URL` | Override the Tavily API endpoint. Useful for corporate proxies and self-hosted Tavily-compatible search backends. Same pattern as `GROQ_BASE_URL`. |
 | `PERPLEXITY_API_KEY` | Perplexity Search API key for the `perplexity` web backend — ranked search results plus query-relevant page snippets for extract ([perplexity.ai/account/api](https://www.perplexity.ai/account/api)) |

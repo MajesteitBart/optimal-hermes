@@ -1420,6 +1420,8 @@ Subcommands:
 | `snapshot` | Export/import skill configurations. |
 | `tap` | Manage custom skill sources. |
 | `config` | Interactive enable/disable configuration for skills by platform. |
+| `select` | Score every skill 0-9 against a task with Jev and show which ones would be attached (`--format json\|table\|context`, `--min-score`, `--target`, `--budget`, `--context-file`, `--dry-run`). Needs `TYPESAFE_API_KEY` except with `--dry-run`. See [Relevance scoring](../user-guide/features/context-relevance.md). |
+| `overlap` | Find skills that do the same job (`--min`, `--json`). Read-only. |
 
 Common examples:
 
@@ -1438,6 +1440,9 @@ hermes skills check
 hermes skills update
 hermes skills config
 hermes skills reset google-workspace
+hermes skills select --format table "review this pull request"
+hermes skills select --dry-run "anything"
+hermes skills overlap --min 0.8
 hermes skills reset google-workspace --restore --yes
 hermes skills opt-out                  # stop future bundled-skill seeding (nothing deleted)
 hermes skills opt-out --remove --yes   # also delete UNMODIFIED bundled skills
@@ -1579,10 +1584,24 @@ Subcommands:
 | `setup` | Interactive provider selection and configuration. |
 | `status` | Show current memory provider config. |
 | `off` | Disable external provider (built-in only). |
+| `reset` | Erase built-in memory (`--target all\|memory\|user`, `--yes`). |
+| `audit` | Judge every MEMORY.md / USER.md entry with Jev: duplicates, superseded entries, task progress, procedures, low value, wrong store (`--target`, `--json`). Read-only. |
 
 :::info Provider-specific subcommands
 When an external memory provider is active, it may register its own top-level `hermes <provider>` command for provider-specific management (e.g. `hermes honcho` when Honcho is active). Inactive providers do not expose their subcommands. Run `hermes --help` to see what's currently wired in.
 :::
+
+## `hermes relevance`
+
+```bash
+hermes relevance status
+hermes relevance report [--days 7] [--json]
+```
+
+`status` shows which [relevance scoring](../user-guide/features/context-relevance.md) features are
+enabled and whether `TYPESAFE_API_KEY` is set. `report` summarizes the local decision ledger
+(`~/.hermes/logs/relevance.jsonl`): attach rates, write-gate outcomes, latency, Jev token use and
+cost, and which attached skills the replies actually followed.
 
 ## `hermes acp`
 
